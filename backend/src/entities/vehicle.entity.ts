@@ -24,12 +24,6 @@ export class Vehicle {
   })
   status: 'Active' | 'Inactive' | 'Maintenance';
 
-  @Column('float')
-  latitude: number;
-
-  @Column('float')
-  longitude: number;
-
   @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: 'driverId' })
   driver: User;
