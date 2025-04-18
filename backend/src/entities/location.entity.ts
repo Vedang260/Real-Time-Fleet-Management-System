@@ -17,7 +17,4 @@ export class Location {
 
   @CreateDateColumn({ type: 'timestamp' })
   recordedAt: Date;
-
-  @Column({ default: false })
-  isCurrent: boolean; // Marks real-time location
 }
