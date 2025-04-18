@@ -1,10 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Role } from '../enums/role.enums';
 
 @Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  userId: string;
 
   @Column()
   username: string;
@@ -15,16 +15,15 @@ export class User {
   @Column()
   password: string;
 
-  @Column({
-    type: 'enum',
-    enum: Role,
-    default: Role.MANAGER,
-  })
+  @Column({ type: 'enum', enum: Role })
   role: Role;
 
   @Column({ default: true })
   isActive: boolean;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({ type: 'timestamp'})
   createdAt: Date;
+
+  @UpdateDateColumn({ type: 'timestamp'})
+  updatedAt: Date;
 }
