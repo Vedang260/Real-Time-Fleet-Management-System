@@ -3,13 +3,10 @@ import { User } from '../entities/user.entity';
 import { FastifyInstance } from 'fastify';
 import { LoginDto, RegisterDto } from '../dtos/auth.dto';
 import bcrypt from 'bcrypt';
+import { UserRepository } from '../repositories/user.repository';
 
 export class AuthService {
-  private userRepository: Repository<User>;
-
-  constructor(fastify: FastifyInstance) {
-    this.userRepository = fastify.db.getRepository(User);
-  }
+  private userRepository: UserRepository;
 
   async register(registerDto: RegisterDto) {
     try{
@@ -17,7 +14,7 @@ export class AuthService {
         const existingUser = await this.userRepository.findOne({ where: { email: registerDto.email}});
 
         if(existingUser){
-            
+
         }
         const hashedPassword = await bcrypt.hash(registerDto.password, 10);
     }catch(error){
