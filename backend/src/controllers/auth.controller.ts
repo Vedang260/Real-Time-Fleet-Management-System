@@ -8,14 +8,14 @@ export class AuthController {
     constructor(fastify: FastifyInstance) {
         this.authService = new AuthService(fastify); // Injecting the service into the controller
     }
-    
+
     register = async ( request: FastifyRequest<{ Body: RegisterDto }>, reply: FastifyReply ) => {
         const result = await this.authService.register(request.body);
         reply.send(result);
     }
 
     login = async (request: FastifyRequest<{ Body: LoginDto }>, reply: FastifyReply) => {
-        // const result = await this.authService.login(request.body);
-        // reply.send(result.data);
+        const result = await this.authService.login(request.body);
+        reply.send(result);
     }
 }

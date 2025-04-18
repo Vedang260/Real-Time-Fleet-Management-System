@@ -4,11 +4,12 @@ import fastify, { FastifyInstance } from 'fastify';
 import { LoginDto, RegisterDto } from '../dtos/auth.dto';
 import bcrypt from 'bcrypt';
 import { UserRepository } from '../repositories/user.repository';
+import jwt from '../plugins/jwt';
 
 export class AuthService {
   private userRepository: UserRepository;
 
-  constructor(fastify: FastifyInstance) {
+  constructor(private readonly fastify: FastifyInstance) {
     this.userRepository = new UserRepository(fastify);
   }
 
@@ -48,6 +49,43 @@ export class AuthService {
         }
     }
 
+  }
+
+  async login(loginDto: LoginDto){
+    try{
+        // find whether the user exists or not
+        const user = await this.userRepository.findByEmail(loginDto.email);
+
+        if(!user){
+            return{
+                success: false,
+                message: 'User does not exist'
+            }
+        }
+
+        // check if password is correct
+        const isValid = await bcrypt.compare(loginDto.password, user.password);
+        if (!isValid) 
+            return{
+                success: false,
+                message: 'Invalid Credentials'
+            }
+
+        // if user is valid, then generate a token
+        const token = this.fastify.jwt.sign({ id: user.userId, username: user.username, role: user.role }, {expiresIn: '1h'});
+
+        return{
+            success: true,
+            message: 'User is logged in successfully',
+            token: token
+        }
+    }catch(error: any){
+        console.error('Error in login: ', error.message);
+        return{
+            success: false,
+            message: 'Failed to login'
+        }
+    }
   }
 }
 
