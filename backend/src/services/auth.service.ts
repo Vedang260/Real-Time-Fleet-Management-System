@@ -6,7 +6,7 @@ import bcrypt from 'bcrypt';
 import { UserRepository } from '../repositories/user.repository';
 
 export class AuthService {
-  private userRepository: UserRepository;
+  private userRepository = new  UserRepository();
 
   async register(registerDto: RegisterDto) {
     try{
@@ -35,16 +35,16 @@ export class AuthService {
     return await this.userRepository.save(user);
   }
 
-  async login(loginDto: LoginDto) {
-    const user = await this.userRepository.findOne({
-      where: { email: loginDto.email },
-      relations: ['role'],
-    });
-    if (!user) throw new Error('User not found');
+//   async login(loginDto: LoginDto) {
+//     const user = await this.userRepository.findOne({
+//       where: { email: loginDto.email },
+//       relations: ['role'],
+//     });
+//     if (!user) throw new Error('User not found');
 
-    const isValid = await bcrypt.compare(loginDto.password, user.password);
-    if (!isValid) throw new Error('Invalid credentials');
+//     const isValid = await bcrypt.compare(loginDto.password, user.password);
+//     if (!isValid) throw new Error('Invalid credentials');
 
-    return user;
-  }
+//     return user;
+//   }
 }
