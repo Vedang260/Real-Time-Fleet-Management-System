@@ -11,7 +11,7 @@ export default fp(async (fastify: FastifyInstance) => {
         description: 'API for Real-Time Fleet Management System',
         version: '1.0.0',
       },
-      servers: [{ url: 'http://localhost:3000' }],
+      servers: [{ url: 'http://localhost:8000' }],
       components: {
         securitySchemes: {
           bearerAuth: {

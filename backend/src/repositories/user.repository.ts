@@ -6,7 +6,11 @@ import { RegisterDto } from "../dtos/auth.dto";
 export class UserRepository{
     private repository: Repository<User>;
 
-    constructor(fastify: FastifyInstance){
+    constructor(fastify: FastifyInstance) {
+        // Check if the fastify.db is correctly initialized
+        if (!fastify.db) {
+            throw new Error("Database connection not established.");
+        }
         this.repository = fastify.db.getRepository(User);
     }
 

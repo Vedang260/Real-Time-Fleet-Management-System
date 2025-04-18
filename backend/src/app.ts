@@ -6,12 +6,13 @@ import jwtPlugin from './plugins/jwt';
 import swaggerPlugin from './plugins/swagger';
 import websocketPlugin from './plugins/websocket';
 import { authRoutes } from './routes/auth.routes';
-// import { vehicleRoutes } from './routes/vehicle.routes';
-// import { locationRoutes } from './routes/location.routes';
-// import { userRoutes } from './routes/user.routes';
-import 'reflect-metadata';
 
+import 'reflect-metadata';
+import dotenv from 'dotenv';
+
+dotenv.config();
 const app: FastifyInstance = Fastify({ logger: true });
+
 
 app.register(cors, { origin: '*' });
 app.register(helmet);
@@ -21,9 +22,6 @@ app.register(swaggerPlugin);
 app.register(websocketPlugin);
 
 app.register(authRoutes, { prefix: '/api/auth' });
-// app.register(vehicleRoutes, { prefix: '/api/vehicles' });
-// app.register(locationRoutes, { prefix: '/api/locations' });
-// app.register(userRoutes, { prefix: '/api/users' });
 
 const start = async () => {
   try {

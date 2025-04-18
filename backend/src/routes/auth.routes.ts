@@ -14,7 +14,7 @@ export async function authRoutes(fastify: FastifyInstance) {
           username: { type: 'string' },
           email: { type: 'string', format: 'email' },
           password: { type: 'string', minLength: 6 },
-          role: { type: 'enum', enum: Role },
+          role: { type: 'string', enum: Object.values(Role) },
         },
       },
     },

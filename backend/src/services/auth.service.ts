@@ -1,50 +1,54 @@
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
-import { FastifyInstance } from 'fastify';
+import fastify, { FastifyInstance } from 'fastify';
 import { LoginDto, RegisterDto } from '../dtos/auth.dto';
 import bcrypt from 'bcrypt';
 import { UserRepository } from '../repositories/user.repository';
 
 export class AuthService {
-  private userRepository = new  UserRepository();
+  private userRepository: UserRepository;
+
+  constructor(fastify: FastifyInstance) {
+    this.userRepository = new UserRepository(fastify);
+  }
 
   async register(registerDto: RegisterDto) {
     try{
         // check if user exists
-        const existingUser = await this.userRepository.findOne({ where: { email: registerDto.email}});
+        const existingUser = await this.userRepository.findByEmail(registerDto.email);
 
+        // if user already exists
         if(existingUser){
-
+            return{
+                success: false,
+                message: 'User already exists'
+            }
         }
+        // if new user then hash the password
         const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-    }catch(error){
+        registerDto.password = hashedPassword;
 
+        // create a new user
+        const newUser = await this.userRepository.createUser(registerDto);
+        if(newUser){
+            return {
+                success: true,
+                message: 'User is registered successfully'
+            }
+        }
+        return {
+            success: false,
+            message: 'Failed to register user'
+        }
+    }catch(error: any){
+        console.error('Error in user registeration: ', error.message);
+        return {
+            success: false,
+            message: 'Failed to register the user'
+        }
     }
-    const role = await this.roleRepository.findOne({ where: { name: role } });
-    if (!role) throw new Error('Role not found');
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = this.userRepository.create({
-      username,
-      email,
-      password: hashedPassword,
-      role,
-      roleId: role.id,
-    });
-
-    return await this.userRepository.save(user);
   }
-
-//   async login(loginDto: LoginDto) {
-//     const user = await this.userRepository.findOne({
-//       where: { email: loginDto.email },
-//       relations: ['role'],
-//     });
-//     if (!user) throw new Error('User not found');
-
-//     const isValid = await bcrypt.compare(loginDto.password, user.password);
-//     if (!isValid) throw new Error('Invalid credentials');
-
-//     return user;
-//   }
 }
+
+
