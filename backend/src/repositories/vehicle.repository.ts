@@ -14,15 +14,6 @@ export class VehicleRepository{
         this.repository = fastify.db.getRepository(Vehicle);
     }
 
-    // async findById(vehicleId: string): Promise<Vehicle | null>{
-    //     try{
-    //         return this.repository.findOne({ where: {vehicleId}});
-    //     }catch(error: any){
-    //         console.error('Error in finding a user by email: ', error.message);
-    //         throw new error('Error in finding a user by email');
-    //     }
-    // }
-
     async createVehicle(vehicleDto: VehicleDto) : Promise<Vehicle | null>{
         try{
             const newVehicle = this.repository.create(vehicleDto);
@@ -33,9 +24,9 @@ export class VehicleRepository{
         }
     }
 
-    async getAllVehicles() : Promise<Vehicles[] | null>{
+    async getAllVehicles() : Promise<Vehicle[] | null>{
         try{
-
+            return await this.repository.find();
         }catch(error: any){
             console.error('Error in fetching all the vehicles: ', error.message);
             throw new error('Error in fetching all the vehicles');
@@ -44,25 +35,32 @@ export class VehicleRepository{
 
     async deleteVehicle(vehicleId: string) {
         try{
-            await this.repository.delete(vehicleId);
+            const result = await this.repository.delete(vehicleId);
+            if (result.affected === 0) {
+                throw new Error('Vehicle not found');
+            }
         }catch(error: any){
             console.error('Error in deleting a vehicle: ', error.message);
             throw new error('Error in deleting a vehicle');
         }
     }
 
-    async getVehiclesByDriver(driverId: string) {
+    async getVehiclesByDriver(driverId: string): Promise<Vehicle[] | null> {
         try{
-
+            return await this.repository.find({ where: { driverId } });
         }catch(error: any){
             console.error('Error in fetching a vehicle by DriverId: ', error.message);
             throw new error('Error in fetching a vehicle by DriverId');
         }
     }
 
-    async updateVehicleStatus(vehicleId: string){
+    async updateVehicleStatus(vehicleId: string, status: enum){
         try{
+            const vehicle = await this.repository.findOne({ where: { vehicleId } });
+            if (!vehicle) throw new Error("Vehicle not found");
 
+            vehicle.status = status;
+            return await this.repository.save(vehicle);
         }catch(error: any){
             console.error('Error in updating vehicle status: ', error.message);
             throw new error('Error in updating vehicle status');

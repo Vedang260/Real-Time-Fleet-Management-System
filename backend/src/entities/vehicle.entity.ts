@@ -6,7 +6,7 @@ import { Alert } from './alert.entity';
 @Entity()
 export class Vehicle {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  vehicleId: string;
 
   @Column()
   model: string;

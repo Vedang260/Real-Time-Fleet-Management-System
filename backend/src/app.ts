@@ -6,7 +6,7 @@ import jwtPlugin from './plugins/jwt';
 import swaggerPlugin from './plugins/swagger';
 import websocketPlugin from './plugins/websocket';
 import { authRoutes } from './routes/auth.routes';
-
+import { vehicleRoutes } from './routes/vehicle.routes';
 import 'reflect-metadata';
 import dotenv from 'dotenv';
 
@@ -22,7 +22,7 @@ app.register(swaggerPlugin);
 app.register(websocketPlugin);
 
 app.register(authRoutes, { prefix: '/api/auth' });
-
+app.register(vehicleRoutes, { prefix: '/api/vehicle'});
 const start = async () => {
   try {
     await app.listen({ port: parseInt(process.env.PORT || '8000') });
