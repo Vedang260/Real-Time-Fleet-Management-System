@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { VehicleDto } from '../dtos/vehicle.dto';
 import { VehicleService } from '../services/vehicle.service';
+import { VehicleStatus } from '../enums/vehicleStatus.enums';
 
 export class VehicleController {
     private vehicleService : VehicleService;
@@ -15,17 +16,20 @@ export class VehicleController {
     }
 
     getAllVehicles = async ( request: FastifyRequest, reply: FastifyReply) => {
-        const result = await this.vehicleService.getAllVehicles;
+        const result = await this.vehicleService.getAllVehicles();
         reply.send(result);
     }
 
-    getVehiclesByDriverId = async ( request: FastifyRequest, reply: FastifyReply) => {
-        const result = await this.vehicleService.createVehicle(request.body);
+    getVehiclesByDriverId = async (request: FastifyRequest<{ Params: { driverId: string } }>, reply: FastifyReply) => {
+        const { driverId } = request.params;
+        const result = await this.vehicleService.getVehiclesByDriver(driverId);
         reply.send(result);
     }
-
-    updateVehicleStatus = async ( request: FastifyRequest, reply: FastifyReply) => {
-        const result = await this.vehicleService.createVehicle(request.body);
+    
+    updateVehicleStatus = async (request: FastifyRequest<{ Params: { vehicleId: string }, Body: { status: VehicleStatus } }>, reply: FastifyReply) => {
+        const { vehicleId } = request.params;
+        const { status } = request.body;
+        const result = await this.vehicleService.updateVehicleStatus(vehicleId, status);
         reply.send(result);
     }
 
@@ -34,4 +38,5 @@ export class VehicleController {
         const result = await this.vehicleService.deleteVehicle(vehicleId);
         reply.send(result);
     }
+
 }
