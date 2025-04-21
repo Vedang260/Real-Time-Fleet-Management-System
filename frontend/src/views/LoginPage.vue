@@ -149,10 +149,10 @@ async function submit() {
         router.push('/login');
       }, 2000);
     } else {
-      throw new Error('Login failed');
+      throw new Error(response.message);
     }
-  } catch (err) {
-    snackbarMessage.value = 'Login failed. Please try again.';
+  } catch (err: any) {
+    snackbarMessage.value = err.message;
     snackbarColor.value = 'error';
     snackbar.value = true;
   } finally {
@@ -160,3 +160,85 @@ async function submit() {
   }
 }
 </script>
+
+
+<style scoped>
+.login-page {
+  background: linear-gradient(135deg, #f9fbfd 0%, #e8ecef 100%);
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('../assets/patterns/register-pattern.png') no-repeat center center;
+  background-size: cover;
+  opacity: 0.1;
+  z-index: 0;
+}
+
+.login-card {
+  background: white;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.login-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, #2196F3 0%, #4CAF50 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+}
+
+.gradient-button {
+  background: linear-gradient(90deg, #2196F3 0%, #4CAF50 100%);
+  color: white !important;
+}
+
+.link {
+  color: #2196F3;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.v-text-field,
+.v-select {
+  transition: all 0.3s ease;
+}
+
+.v-text-field:hover,
+.v-select:hover {
+  transform: translateY(-2px);
+}
+
+@media (max-width: 600px) {
+  .text-h4 {
+    font-size: 1.5rem !important;
+  }
+
+  .login-card {
+    padding: 1rem;
+  }
+
+  .v-btn {
+    font-size: 0.875rem;
+  }
+}
+</style>

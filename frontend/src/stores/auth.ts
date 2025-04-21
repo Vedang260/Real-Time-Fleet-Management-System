@@ -2,7 +2,7 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 import { computed, ref } from 'vue'
-import type { RegisterResponse, User } from '../types/user'
+import type { LoginResponse, RegisterResponse, User } from '../types/user'
 import router from '../router'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -11,7 +11,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => !!token.value)
 
-  async function login(email: string, password: string): Promise<> {
+  async function login(email: string, password: string): Promise<LoginResponse> {
     try {
       const response = await axios.post(`http://localhost:8000/api/auth/login`, {
         email,
@@ -19,13 +19,21 @@ export const useAuthStore = defineStore('auth', () => {
       }, {
         withCredentials: true,
         headers: {
-          'Content-Type': 'aaplication/json'
+          'Content-Type': 'application/json'
         }
       })
-      user.value = response.data.user
-      token.value = response.data.token
-     
-      router.push(user.value.role === 'admin' ? '/admin/dashboard' : user.value.role === 'driver' ? '/driver/dashboard' : '/manager/dashboard')
+      if(response.data.success){
+        token.value = response.data.token;
+        user.value = {
+          userId: response.data.userId,
+          username: response.data.username,
+          email: response.data.email,
+          role: response.data.role,
+        }
+
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
+      }
+      return response.data;
     } catch (error) {
       throw new Error('Login failed')
     }
