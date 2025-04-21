@@ -5,7 +5,14 @@ import { Role } from '../enums/role.enums';
 export async function vehicleRoutes(fastify: FastifyInstance) {
   const vehicleController = new VehicleController(fastify);
 
-  fastify.post('/create', {
+  fastify.post<{
+    Body: {
+      model: string;
+      licensePlate: string;
+      type: string;
+      driverId: string;
+    };
+  }>('/create', {
     preHandler: [fastify.authenticate, fastify.authorizeRoles(Role.ADMIN)] ,
     schema: {
       body: {
@@ -22,11 +29,19 @@ export async function vehicleRoutes(fastify: FastifyInstance) {
   },  vehicleController.createVehicle.bind(vehicleController));
 
   // Get vehicles by driverId
-  fastify.get('/driver/:driverId', { preHandler: [fastify.authenticate, fastify.authorizeRoles(Role.ADMIN, Role.DRIVER, Role.MANAGER)] }, vehicleController.getVehiclesByDriverId.bind(vehicleController));
+  fastify.get<{
+    Params: {
+      driverId: string;
+    };
+  }>(`/driver/:driverId`, { preHandler: [fastify.authenticate, fastify.authorizeRoles(Role.ADMIN, Role.DRIVER, Role.MANAGER)] }, vehicleController.getVehiclesByDriverId.bind(vehicleController));
 
   // Get all vehicles
   fastify.get('/', { preHandler: [fastify.authenticate, fastify.authorizeRoles(Role.ADMIN, Role.MANAGER)] }, vehicleController.getAllVehicles.bind(vehicleController));
 
   // delete vehicle
-  fastify.delete('/:vehicleId', { preHandler: [fastify.authenticate, fastify.authorizeRoles(Role.ADMIN)]}, vehicleController.deleteVehicle.bind(VehicleController));
+  fastify.delete<{
+    Params: {
+      vehicleId: string;
+    };
+  }>(`/:vehicleId`, { preHandler: [fastify.authenticate, fastify.authorizeRoles(Role.ADMIN)]}, vehicleController.deleteVehicle.bind(vehicleController));
 }

@@ -19,7 +19,7 @@ app.register(helmet);
 app.register(dbPlugin);
 app.register(jwtPlugin);
 app.register(swaggerPlugin);
-app.register(websocketPlugin);
+
 
 app.register(authRoutes, { prefix: '/api/auth' });
 app.register(vehicleRoutes, { prefix: '/api/vehicles'});
