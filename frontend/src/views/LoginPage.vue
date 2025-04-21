@@ -146,8 +146,14 @@ async function submit() {
       snackbarColor.value = 'success';
       snackbar.value = true;
       setTimeout(() => {
-        router.push('/login');
-      }, 2000);
+      if (response.role === 'ADMIN') {
+        router.push('/admin');  // Redirect to admin page
+      } else if (response.role === 'MANAGER') {
+        router.push('/manager');  // Redirect to manager page
+      } else {
+        router.push('/driver');  // If role is not recognized, redirect to login page
+      }
+    }, 2000); 
     } else {
       throw new Error(response.message);
     }
