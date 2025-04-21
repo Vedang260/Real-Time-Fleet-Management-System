@@ -11,20 +11,25 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => !!token.value)
 
-//   async function login(email: string, password: string) {
-//     try {
-//       const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
-//         email,
-//         password,
-//       })
-//       user.value = response.data.user
-//       token.value = response.data.token
+  async function login(email: string, password: string): Promise<> {
+    try {
+      const response = await axios.post(`http://localhost:8000/api/auth/login`, {
+        email,
+        password,
+      }, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'aaplication/json'
+        }
+      })
+      user.value = response.data.user
+      token.value = response.data.token
      
-//       router.push(user.value.role === 'admin' ? '/admin/dashboard' : user.value.role === 'driver' ? '/driver/dashboard' : '/manager/dashboard')
-//     } catch (error) {
-//       throw new Error('Login failed')
-//     }
-//   }
+      router.push(user.value.role === 'admin' ? '/admin/dashboard' : user.value.role === 'driver' ? '/driver/dashboard' : '/manager/dashboard')
+    } catch (error) {
+      throw new Error('Login failed')
+    }
+  }
 
   async function register(username: string, email: string, password: string, role: string): Promise<RegisterResponse> {
     try {
@@ -68,5 +73,5 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  return { user, token, isAuthenticated, register, logout, init }
+  return { user, token, isAuthenticated, login, register, logout, init }
 })

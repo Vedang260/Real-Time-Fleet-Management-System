@@ -59,7 +59,10 @@ export class AuthService {
         if(!user){
             return{
                 success: false,
-                message: 'User does not exist'
+                message: 'User does not exist',
+                userId: null,
+                username: null,
+                role: null
             }
         }
 
@@ -77,7 +80,10 @@ export class AuthService {
         return{
             success: true,
             message: 'User is logged in successfully',
-            token: token
+            token: token,
+            userId: user.userId,
+            username: user.username,
+            role: user.role
         }
     }catch(error: any){
         console.error('Error in login: ', error.message);
