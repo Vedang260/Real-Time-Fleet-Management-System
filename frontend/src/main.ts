@@ -6,6 +6,7 @@ import router from './router'
 import { createVuetify } from 'vuetify'
 import { components, directives } from 'vuetify/dist/vuetify.js'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
+import VueGoogleMaps from '@fawmi/vue-google-maps';
 
 const vuetify = createVuetify({
     components,
@@ -34,5 +35,11 @@ const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
 
 app.use(pinia);
-app.use(router)
+app.use(router);
+app.use(VueGoogleMaps, {
+  load: {
+    key: 'AIzaSyCAZ_419S_et5huTGg9w1larVyDu5exq7s',
+    libraries: 'places'
+  },
+});
 app.mount('#app')
