@@ -2,6 +2,7 @@ import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMan
 import { User } from './user.entity';
 import { Location } from './location.entity';
 import { Alert } from './alert.entity';
+import { VehicleStatus } from '../enums/vehicleStatus.enums';
 
 @Entity()
 export class Vehicle {
@@ -19,10 +20,10 @@ export class Vehicle {
 
   @Column({
     type: 'enum',
-    enum: ['Active', 'Inactive', 'Maintenance'],
-    default: 'Active',
+    enum: Object.values(VehicleStatus),
+    default: VehicleStatus.Active,
   })
-  status: 'Active' | 'Inactive' | 'Maintenance';
+  status: VehicleStatus;
 
   @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: 'driverId' })
