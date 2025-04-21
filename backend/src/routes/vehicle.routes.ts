@@ -20,9 +20,9 @@ export async function vehicleRoutes(fastify: FastifyInstance) {
   }, vehicleController.createVehicle.bind(vehicleController));
 
   // Get vehicles by driverId
-  fastify.get('/driver/:driverId', { preHandler: [fastify.authenticate] }, vehicleController.getVehiclesByDriverId.bind(vehicleController));
+  fastify.get('/driver/:driverId', { preHandler: [fastify.authenticate, fastify.authorizeRoles('Admin')] }, vehicleController.getVehiclesByDriverId.bind(vehicleController));
 
   // Get all vehicles
-  fastify.get('/vehicles', { preHandler: [fastify.authenticate] }, vehicleController.getAllVehicles.bind(vehicleController));
+  fastify.get('/', { preHandler: [fastify.authenticate, fastify.au] }, vehicleController.getAllVehicles.bind(vehicleController));
 
 }

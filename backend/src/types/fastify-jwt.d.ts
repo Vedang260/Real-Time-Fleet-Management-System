@@ -14,5 +14,6 @@ declare module 'fastify' {
       verify: (token: string) => any;
     };
     authenticate: any;
+    authorizeRoles: (...roles: string[]) => (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
   }
 }
