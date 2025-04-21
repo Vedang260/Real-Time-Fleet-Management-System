@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Vehicle } from "./vehicle.entity";
 
 @Entity({ name: 'locations' })
@@ -7,6 +7,7 @@ export class Location {
   locationId: string;
 
   @ManyToOne(() => Vehicle, (vehicle) => vehicle.locations, { onDelete: 'CASCADE' })
+  @JoinColumn({name: 'vehicleId'})
   vehicle: Vehicle;
 
   @Column({ type: 'double precision' })

@@ -15,16 +15,16 @@ export class LocationRepository{
             const newLocation = this.locationsRepository.create(locationDto);
             return await this.locationsRepository.save(newLocation);
         }catch(error: any){
-            console.error('Error in creating adding a new Location: ', error.message);
-            throw new error('Failed to add a new Location');
+            console.error('Error in creating saving a new Location: ', error.message);
+            throw new error('Failed to save a new Location');
         }
     }
 
-    async getLocationHistory(vehicleId: string){
-        try{
-            return await this.locationsRepository.find();
-        }catch(error){
+    // async getLocationHistory(vehicleId: string){
+    //     try{
+    //         return await this.locationsRepository.find({where: {vehicleId}});
+    //     }catch(error){
 
-        }
-    }
+    //     }
+    // }
 }
