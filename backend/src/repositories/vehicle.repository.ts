@@ -2,6 +2,7 @@ import { Repository } from "typeorm";
 import { Vehicle } from "../entities/vehicle.entity";
 import { FastifyInstance } from "fastify";
 import { VehicleDto } from "../dtos/vehicle.dto";
+import { VehicleStatus } from "../enums/vehicleStatus.enums";
 
 export class VehicleRepository{
     private repository: Repository<Vehicle>;
@@ -54,7 +55,7 @@ export class VehicleRepository{
         }
     }
 
-    async updateVehicleStatus(vehicleId: string, status: enum){
+    async updateVehicleStatus(vehicleId: string, status: VehicleStatus){
         try{
             const vehicle = await this.repository.findOne({ where: { vehicleId } });
             if (!vehicle) throw new Error("Vehicle not found");
