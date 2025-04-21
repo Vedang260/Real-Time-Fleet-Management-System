@@ -14,4 +14,21 @@ export default fp(async (fastify: FastifyInstance) => {
       throw new Error('Unauthorized');
     }
   });
+
+  fastify.decorate(
+    'authorizeRoles',
+    (...roles: string[]) =>
+      async function (request: FastifyRequest) {
+        try{
+          await fastify.authenticate(request); // Ensure the user is authenticated first
+          const user = request.user as any;
+
+          if (!roles.includes(user.role)) {
+            throw new Error('Forbidden: Insufficient role');
+          }
+        }catch(error: any){
+          throw new Error(error);
+        }
+      }
+  );
 });

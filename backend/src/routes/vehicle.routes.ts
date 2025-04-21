@@ -13,24 +13,16 @@ export async function vehicleRoutes(fastify: FastifyInstance) {
           model: { type: 'string' },
           licensePlate: { type: 'string' },
           type: { type: 'string'},
-          driverId: { type: 'string' },
-          latitude: { type: 'number' },
-          longitude: { type: 'number' }
+          driverId: { type: 'string' }
         },
       },
     },
   }, vehicleController.createVehicle.bind(vehicleController));
 
-//   fastify.post('/login', {
-//     schema: {
-//       body: {
-//         type: 'object',
-//         required: ['email', 'password'],
-//         properties: {
-//           email: { type: 'string', format: 'email' },
-//           password: { type: 'string', minLength: 6 },
-//         },
-//       },
-//     },
-//   }, authController.login.bind(authController));
+  // Get vehicles by driverId
+  fastify.get('/driver/:driverId', { preHandler: [fastify.authenticate] }, vehicleController.getVehiclesByDriverId.bind(vehicleController));
+
+  // Get all vehicles
+  fastify.get('/vehicles', { preHandler: [fastify.authenticate] }, vehicleController.getAllVehicles.bind(vehicleController));
+
 }
