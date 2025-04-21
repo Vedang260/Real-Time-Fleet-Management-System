@@ -5,6 +5,7 @@ import App from './App.vue'
 import router from './router'
 import { createVuetify } from 'vuetify'
 import { components, directives } from 'vuetify/dist/vuetify.js'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 
 const vuetify = createVuetify({
     components,
@@ -28,6 +29,10 @@ const vuetify = createVuetify({
   
 const app = createApp(App).use(vuetify)
 
-app.use(createPinia())
+// Initialize Pinia and add persisted state plugin
+const pinia = createPinia();
+pinia.use(piniaPluginPersistedstate);
+
+app.use(pinia);
 app.use(router)
 app.mount('#app')
