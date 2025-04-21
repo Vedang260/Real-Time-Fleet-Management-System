@@ -27,8 +27,18 @@ export default fp(async (fastify: FastifyInstance) => {
   fastify.register(swaggerUi, {
     routePrefix: '/docs',
     uiConfig: {
-      docExpansion: 'full',
-      deepLinking: false,
+      docExpansion: 'list', // Better for navigation
+      deepLinking: true, // Enable deep linking
+      filter: true, // Show search/filter box
+      persistAuthorization: true, // Remember auth between refreshes
+      displayRequestDuration: true, // Show API call duration
+      tryItOutEnabled: true // Enable "Try it out" by default
     },
+    uiHooks: {
+      onRequest: (request, reply, next) => { next() },
+      preHandler: (request, reply, next) => { next() }
+    },
+    staticCSP: true,
+    transformStaticCSP: (header) => header
   });
 });

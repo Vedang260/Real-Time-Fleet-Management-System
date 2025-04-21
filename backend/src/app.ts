@@ -1,5 +1,5 @@
 import Fastify, { FastifyInstance } from 'fastify';
-import cors from '@fastify/cors';
+import cors, { fastifyCors } from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import dbPlugin from './plugins/db';
 import jwtPlugin from './plugins/jwt';
@@ -13,8 +13,20 @@ import dotenv from 'dotenv';
 dotenv.config();
 const app: FastifyInstance = Fastify({ logger: true });
 
-
-app.register(cors, { origin: '*' });
+app.register(fastifyCors, {
+  origin: true, // or specify your frontend domains ['http://localhost:3000', 'https://yourdomain.com']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: [
+    'Origin',
+    'X-Requested-With',
+    'Content-Type',
+    'Accept',
+    'Authorization'  // This is crucial for JWT
+  ],
+  exposedHeaders: ['Authorization'], // Expose Authorization header to frontend
+  credentials: true, // Allow credentials (cookies, authorization headers)
+  maxAge: 86400 // How long the options request is cached
+});
 app.register(helmet);
 app.register(dbPlugin);
 app.register(jwtPlugin);

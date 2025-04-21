@@ -17,6 +17,7 @@ export async function authRoutes(fastify: FastifyInstance) {
           role: { type: 'string', enum: Object.values(Role) },
         },
       },
+      security: [{ bearerAuth: [] }]
     },
   }, authController.register.bind(authController));
 
