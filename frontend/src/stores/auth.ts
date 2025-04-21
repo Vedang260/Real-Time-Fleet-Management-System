@@ -4,13 +4,23 @@ import axios from 'axios'
 import { computed, ref } from 'vue'
 import type { LoginResponse, RegisterResponse, User } from '../types/user'
 import router from '../router'
+import { customStorage } from '@/utils/customStorage'
+import type { PersistenceOptions } from 'pinia-plugin-persistedstate'
 
 export const useAuthStore = defineStore('auth', () => {
+  // State - no manual hydration needed anymore
   const user = ref<User | null>(null)
   const token = ref<string | null>(null)
 
+  // Set axios headers if token exists (will run after hydration)
+  if (token.value) {
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
+  }
+
+  // Computed
   const isAuthenticated = computed(() => !!token.value)
 
+  // Actions
   async function login(email: string, password: string): Promise<LoginResponse> {
     try {
       const response = await axios.post(`http://localhost:8000/api/auth/login`, {
@@ -22,8 +32,9 @@ export const useAuthStore = defineStore('auth', () => {
           'Content-Type': 'application/json'
         }
       })
-      if(response.data.success){
-        token.value = response.data.token;
+
+      if (response.data.success) {
+        token.value = response.data.token
         user.value = {
           userId: response.data.userId,
           username: response.data.username,
@@ -31,9 +42,10 @@ export const useAuthStore = defineStore('auth', () => {
           role: response.data.role,
         }
 
+                // Axios headers will be set automatically due to reactivity
         axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
       }
-      return response.data;
+      return response.data
     } catch (error) {
       throw new Error('Login failed')
     }
@@ -46,40 +58,43 @@ export const useAuthStore = defineStore('auth', () => {
         email,
         password,
         role,
-      }, { withCredentials: true, headers: {
-        'Content-Type': 'application/json'
-      }} );
-      console.log("Response: ", response);
-      return response.data;
+      }, { 
+        withCredentials: true, 
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      return response.data
     } catch (error) {
       throw new Error('Registration failed')
     }
   }
 
-  function logout() {
-    user.value = null
+  async function logout() {
     token.value = null
-    localStorage.remove('token')
+    user.value = null
+    delete axios.defaults.headers.common['Authorization']
     router.push('/login')
   }
 
-  function init() {
-    const savedToken = localStorage.getItem('token')
-    if (savedToken) {
-      token.value = savedToken
-      // Fetch user data if needed
-      axios
-        .get(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
-          headers: { Authorization: `Bearer ${token.value}` },
-        })
-        .then((response) => {
-          user.value = response.data
-        })
-        .catch(() => {
-          logout()
-        })
-    }
+  return { 
+    user, 
+    token, 
+    isAuthenticated, 
+    login, 
+    register, 
+    logout 
   }
-
-  return { user, token, isAuthenticated, login, register, logout, init }
-},)
+}, {
+  persist: {
+    storage: customStorage,
+    paths: ['user', 'token'],
+    afterRestore: (ctx: any) => {
+      console.log('Restored token:', ctx.store.token)
+      console.log('Restored user:', ctx.store.user)
+      if (ctx.store.token) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${ctx.store.token}`
+      }
+    }
+  } as PersistenceOptions
+})

@@ -25,6 +25,11 @@ export default defineConfig({
   optimizeDeps: {
     include: ['fast-deep-equal'],
   },
+  server: {
+    hmr: {
+      overlay: false, // Disable HMR overlay for now to avoid the error popup
+    },
+  },
 })
 
 

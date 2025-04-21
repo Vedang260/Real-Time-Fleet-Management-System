@@ -1,16 +1,22 @@
-import type { StorageItem } from "@/types/storage";
+import type { StorageLike } from "pinia-plugin-persistedstate"
 
-const memoryStorage: { [key: string]: StorageItem } = {};
+export class CustomStorage implements StorageLike {
+  private storage = new Map<string, string>()
 
-export const customStorage = {
   getItem(key: string): string | null {
-    const item = memoryStorage[key];
-    return item ? item.value : null;
-  },
+    console.log(`Getting item: ${key}`)
+    return localStorage.getItem(key) || null
+  }
+
   setItem(key: string, value: string): void {
-    memoryStorage[key] = { value };
-  },
+    console.log(`Setting item: ${key} = ${value}`)
+    localStorage.setItem(key, value)
+  }
+
   removeItem(key: string): void {
-    delete memoryStorage[key];
-  },
-};
+    console.log(`Removing item: ${key}`)
+    localStorage.removeItem(key)
+  }
+}
+
+export const customStorage = new CustomStorage()
