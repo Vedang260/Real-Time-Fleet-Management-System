@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { VehicleRepository } from "../repositories/vehicle.repository";
 import { VehicleDto } from "../dtos/vehicle.dto";
+import { VehicleStatus } from "../enums/vehicleStatus.enums";
 
 export class VehicleService{
     private vehicleRepository: VehicleRepository;
@@ -67,12 +68,33 @@ export class VehicleService{
 
     async deleteVehicle(vehicleId: string){
         try{
-            
+            await this.vehicleRepository.deleteVehicle(vehicleId);
+            return {
+                success: true,
+                message: 'Vehicle deleted successfully'
+            }
         }catch(error: any){
             console.error('Error in deleting a vehicle: ', error.message);
             return{
                 success: false,
                 message: 'Failed to deleting a vehicle'
+            }
+        }
+    }
+
+    async updateVehicleStatus(vehicleId: string, status: VehicleStatus) {
+        try {
+            const updated = await this.vehicleRepository.updateVehicleStatus(vehicleId, status);
+            return {
+                success: true,
+                message: 'Vehicle status updated successfully',
+                vehicle: updated
+            }
+        } catch (error: any) {
+            console.error('Error in updating vehicle status: ', error.message);
+            return {
+                success: false,
+                message: 'Failed to update vehicle status'
             }
         }
     }
