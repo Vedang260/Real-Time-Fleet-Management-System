@@ -22,7 +22,7 @@ app.register(swaggerPlugin);
 app.register(websocketPlugin);
 
 app.register(authRoutes, { prefix: '/api/auth' });
-app.register(vehicleRoutes, { prefix: '/api/vehicle'});
+app.register(vehicleRoutes, { prefix: '/api/vehicles'});
 const start = async () => {
   try {
     await app.listen({ port: parseInt(process.env.PORT || '8000') });
