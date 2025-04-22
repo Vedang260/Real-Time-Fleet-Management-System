@@ -106,8 +106,11 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import VehicleTable from '@/components/VehicleTable.vue'
-import type { Vehicle } from '@/types/vehicle'
+import type { GetVehiclesResponse, Vehicle } from '@/types/vehicle'
 import Navbar from '@/components/Navbar.vue'
+import axios from 'axios'
+import { customStorage } from '@/utils/customStorage'
+
 // State
 const vehicles = ref<Vehicle[]>([])
 const loading = ref(false)
@@ -119,9 +122,19 @@ const router = useRouter()
 const fetchVehicles = async () => {
   loading.value = true
   try {
-    const response = await fetch('/api/vehicles') // Replace with your actual backend URL
-    const data = await response.json()
-    vehicles.value = data
+    const storedUser = customStorage.getItem('auth');
+    const user = (storedUser ? JSON.parse(storedUser) : null)
+    const response = await axios.get<GetVehiclesResponse>(`http://localhost:8000/api/vehicles`, { 
+        withCredentials: true, 
+        headers: {
+          'Authorization': `Bearer ${user.token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+    if(response.data.success){
+       vehicles.value = response.data.vehicles;
+    }
+    
   } catch (error) {
     console.error('Failed to fetch vehicles:', error)
   } finally {

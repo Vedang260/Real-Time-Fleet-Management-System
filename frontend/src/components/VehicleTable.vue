@@ -77,7 +77,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { DataTableHeader } from 'vuetify'
-import axios from 'axios'
 
 // Props
 defineProps<{
@@ -100,9 +99,11 @@ const totalPages = ref(0)
 
 // Table headers with proper typing
 const headers: DataTableHeader[] = [
-  { title: 'ID', key: 'id', width: '100px' },
+  { title: 'ID', key: 'vehicleId', width: '100px' },
   { title: 'Model', key: 'model' },
-  { title: 'License Plate', key: 'plate' },
+  { title: 'License Plate', key: 'licensePlate' },
+  { title: 'Type', key: 'type' },
+  { title: 'Driver', key: 'driver.username' },
   { title: 'Status', key: 'status', align: 'center' },
   { title: 'Actions', key: 'actions', sortable: false, align: 'center', width: '150px' }
 ]
