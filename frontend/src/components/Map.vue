@@ -125,12 +125,18 @@
     </v-card>
 
     <!-- Snackbar -->
-    <v-snackbar v-model="snackbar" :color="snackbarColor" top timeout="3000">
-      {{ snackbarMessage }}
-      <template #action="{ attrs }">
-        <v-btn text v-bind="attrs" @click="snackbar = false">Close</v-btn>
-      </template>
-    </v-snackbar>
+    <v-snackbar
+              v-model="snackbar"
+              :color="snackbarColor"
+              timeout="3000"
+              rounded="pill"
+              top
+            >
+              {{ snackbarMessage }}
+              <template v-slot:actions>
+                <v-btn text @click="snackbar = false">Close</v-btn>
+              </template>
+      </v-snackbar>
   </div>
 </template>
 
@@ -140,6 +146,7 @@ import { useRoute } from 'vue-router'
 import { format } from 'date-fns'
 import axios from 'axios'
 import type { LocationHistory, LocationHistoryResponse } from '@/types/location'
+import { customStorage } from '@/utils/customStorage'
 
 // Route params
 const route = useRoute()
@@ -176,9 +183,13 @@ const getMarkerIcon = (index: number) => ({
 })
 
 // Notification state
-const snackbar = ref(false)
-const snackbarMessage = ref('')
-const snackbarColor = ref('success')
+const snackbar = ref(false);
+const snackbarMessage = ref('');
+const snackbarColor = ref('error');
+
+// Auth
+const storedUser = customStorage.getItem('auth');
+const user = (storedUser ? JSON.parse(storedUser) : null);
 
 // WebSocket
 let ws: WebSocket | null = null
@@ -192,8 +203,15 @@ const formatTimestamp = (timestamp: string) => {
 // Fetch location history
 const fetchLocationHistory = async () => {
   try {
-    const response = await axios.get<LocationHistoryResponse>(`/api/locations/${vehicleId.value}`)
+    const response = await axios.get<LocationHistoryResponse>(`http://localhost:8000/api/locations/history/${vehicleId.value}`, {
+      withCredentials: true, 
+        headers: {
+          'Authorization': `Bearer ${user.token}`,
+          'Content-Type': 'application/json'
+        }
+    });
     if (response.data.success) {
+
       locationHistory.value = response.data.locationHistory
         .sort((a: LocationHistory, b: LocationHistory) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime())
       hasLocation.value = locationHistory.value.length > 0
@@ -283,6 +301,9 @@ const saveLocation = async () => {
     }
     const response = await axios.post(`/api/locations/${vehicleId.value}`, newLocation)
     if (response.data.success) {
+        snackbarMessage.value = response.data.message;
+        snackbarColor.value = 'success';
+        snackbar.value = true;
       const savedLocation: LocationHistory = {
         locationId: response.data.locationId || crypto.randomUUID(),
         vehicleId: vehicleId.value,
