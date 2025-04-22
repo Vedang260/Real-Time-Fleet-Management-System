@@ -7,20 +7,6 @@
       </v-toolbar>
 
       <v-card-text>
-        <!-- Vehicle Info Card -->
-        <v-card v-if="vehicle" class="mb-6" elevation="4" rounded="lg">
-          <v-card-text class="d-flex align-center">
-            <v-avatar color="secondary" size="56" class="mr-4">
-              <v-icon large>mdi-car</v-icon>
-            </v-avatar>
-            <div>
-              <div class="text-h6">{{ vehicle.model }}</div>
-              <div class="text-subtitle-1">Plate: {{ vehicle.plate }}</div>
-              <div class="text-caption">Last updated: {{ formatTimestamp(vehicle.lastUpdated) }}</div>
-            </div>
-          </v-card-text>
-        </v-card>
-
         <!-- Search and Controls -->
         <div class="map-controls">
           <GMapAutocomplete @place_changed="onPlaceChanged" class="search-bar">
@@ -60,7 +46,21 @@
             style="width: 100%; height: 60vh"
             @click="onMapClick"
           >
-            <!-- Vehicle Marker -->
+            <!-- Historical Markers -->
+            <GMapMarker
+              v-for="(loc, index) in locationHistory"
+              :key="loc.locationId"
+              :position="{ lat: loc.latitude, lng: loc.longitude }"
+              :icon="getMarkerIcon(index)"
+            >
+              <GMapInfoWindow>
+                <div class="info-window">
+                  Recorded: {{ formatTimestamp(loc.recordedAt) }}
+                </div>
+              </GMapInfoWindow>
+            </GMapMarker>
+
+            <!-- Car Marker (Latest Position) -->
             <GMapMarker
               v-if="vehiclePosition"
               :position="vehiclePosition"
@@ -68,9 +68,7 @@
             >
               <GMapInfoWindow>
                 <div class="info-window">
-                  <strong>{{ vehicle?.model }}</strong><br />
-                  Plate: {{ vehicle?.plate }}<br />
-                  Last updated: {{ formatTimestamp(vehicle?.lastUpdated) }}
+                  Latest: {{ formatTimestamp(vehiclePosition.recordedAt) }}
                 </div>
               </GMapInfoWindow>
             </GMapMarker>
@@ -78,11 +76,11 @@
             <!-- Location History Path -->
             <GMapPolyline
               v-if="locationHistory.length > 1"
-              :path="locationHistory"
+              :path="locationHistory.map(loc => ({ lat: loc.latitude, lng: loc.longitude }))"
               :options="{
                 strokeColor: '#2196F3',
                 strokeWeight: 5,
-                strokeOpacity: 0.8,
+                strokeOpacity: 0.8
               }"
             />
 
@@ -92,7 +90,7 @@
               :position="selectedLocation"
               :icon="{
                 url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
-                scaledSize: { width: 32, height: 32 },
+                scaledSize: { width: 32, height: 32 }
               }"
             />
           </GMapMap>
@@ -109,14 +107,14 @@
               <v-timeline dense>
                 <v-timeline-item
                   v-for="(loc, index) in locationHistory"
-                  :key="index"
+                  :key="loc.locationId"
                   small
                   :color="index === 0 ? 'primary' : 'grey lighten-1'"
                 >
                   <div class="py-2">
-                    <div><strong>Lat:</strong> {{ loc.lat.toFixed(6) }}</div>
-                    <div><strong>Lng:</strong> {{ loc.lng.toFixed(6) }}</div>
-                    <div class="text-caption">{{ formatTimestamp(loc.timestamp) }}</div>
+                    <div><strong>Lat:</strong> {{ loc.latitude.toFixed(6) }}</div>
+                    <div><strong>Lng:</strong> {{ loc.longitude.toFixed(6) }}</div>
+                    <div class="text-caption">{{ formatTimestamp(loc.recordedAt) }}</div>
                   </div>
                 </v-timeline-item>
               </v-timeline>
@@ -127,94 +125,127 @@
     </v-card>
 
     <!-- Snackbar -->
-    <v-snackbar
-              v-model="snackbar"
-              :color="snackbarColor"
-              timeout="3000"
-              rounded="pill"
-              top
-            >
-              {{ snackbarMessage }}
-              <template v-slot:actions>
-                <v-btn text @click="snackbar = false">Close</v-btn>
-              </template>
-            </v-snackbar>
+    <v-snackbar v-model="snackbar" :color="snackbarColor" top timeout="3000">
+      {{ snackbarMessage }}
+      <template #action="{ attrs }">
+        <v-btn text v-bind="attrs" @click="snackbar = false">Close</v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { format } from 'date-fns'
 import axios from 'axios'
-import type { Vehicle, LocationPoint } from '@/types'
+import type { LocationHistory, LocationHistoryResponse } from '@/types/location'
 
 // Route params
 const route = useRoute()
-const vehicleId = computed(() => route.params.id as string)
+const vehicleId = computed(() => route.params.vehicleId as string)
 
-// Vehicle and location state
-const vehicle = ref<Vehicle | null>(null)
-const locationHistory = ref<LocationPoint[]>([])
+// Location state
+const locationHistory = ref<LocationHistory[]>([])
 const hasLocation = ref(false)
 const selectedLocation = ref<{ lat: number; lng: number } | null>(null)
 const saving = ref(false)
 
 // Map state
 const mapRef = ref(null)
-const mapCenter = ref({ lat: 37.7749, lng: -122.4194 }) // Default: San Francisco
+const mapCenter = ref({ lat: 23.04315296146998, lng: 72.54975871427914 }) // Default: Ahmedabad
 const vehiclePosition = computed(() => {
-  return locationHistory.value.length > 0 ? locationHistory.value[0] : null
+  return locationHistory.value.length > 0 ? {
+    lat: locationHistory.value[0].latitude,
+    lng: locationHistory.value[0].longitude,
+    recordedAt: locationHistory.value[0].recordedAt
+  } : null
 })
 
 // Car icon
 const carIcon = {
   url: 'https://cdn-icons-png.flaticon.com/512/744/744465.png', // Car icon
   scaledSize: { width: 48, height: 48 },
-  anchor: { x: 24, y: 24 },
+  anchor: { x: 24, y: 24 }
 }
+
+// Marker icons for history
+const getMarkerIcon = (index: number) => ({
+  url: index === 0 ? 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png' : 'https://maps.google.com/mapfiles/ms/icons/grey-dot.png',
+  scaledSize: { width: 24, height: 24 }
+})
 
 // Notification state
 const snackbar = ref(false)
 const snackbarMessage = ref('')
 const snackbarColor = ref('success')
 
+// WebSocket
+let ws: WebSocket | null = null
+
 // Format timestamp
-const formatTimestamp = (timestamp?: string) => {
+const formatTimestamp = (timestamp: string) => {
   if (!timestamp) return 'N/A'
   return format(new Date(timestamp), 'PPpp')
 }
 
-// Fetch vehicle and location data
-const fetchVehicleData = async () => {
+// Fetch location history
+const fetchLocationHistory = async () => {
   try {
-    const response = await axios.get(`/api/vehicles/${vehicleId.value}`)
-    const { vehicle: vehicleData, locations } = response.data
-
-    vehicle.value = {
-      id: vehicleData.id,
-      model: vehicleData.model,
-      plate: vehicleData.plate,
-      status: vehicleData.status,
-      lastUpdated: vehicleData.lastUpdated,
-    }
-
-    locationHistory.value = locations
-      .sort((a: LocationPoint, b: LocationPoint) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-      .map((loc: LocationPoint) => ({
-        lat: loc.lat,
-        lng: loc.lng,
-        timestamp: loc.timestamp,
-      }))
-
-    hasLocation.value = locations.length > 0
-    if (locations.length > 0) {
-      mapCenter.value = { lat: locations[0].lat, lng: locations[0].lng }
+    const response = await axios.get<LocationHistoryResponse>(`/api/locations/${vehicleId.value}`)
+    if (response.data.success) {
+      locationHistory.value = response.data.locationHistory
+        .sort((a: LocationHistory, b: LocationHistory) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime())
+      hasLocation.value = locationHistory.value.length > 0
+      if (hasLocation.value) {
+        mapCenter.value = {
+          lat: locationHistory.value[0].latitude,
+          lng: locationHistory.value[0].longitude
+        }
+      } else {
+        showNotification('No locations found. Please select a location on the map.')
+      }
     } else {
-      showNotification('No location found. Please select a location on the map.')
+      throw new Error(response.data.message)
     }
   } catch (error) {
-    showNotification('Failed to load vehicle data', 'error')
+    showNotification('Failed to load location history', 'error')
+  }
+}
+
+// Setup WebSocket
+const setupWebSocket = () => {
+  ws = new WebSocket(`ws://your-backend/locations/${vehicleId.value}`)
+  
+  ws.onopen = () => {
+    console.log('WebSocket connected')
+  }
+
+  ws.onmessage = (event) => {
+    try {
+      const newLocation: LocationHistory = JSON.parse(event.data)
+      if (newLocation.vehicleId === vehicleId.value) {
+        locationHistory.value = [newLocation, ...locationHistory.value]
+          .sort((a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime())
+        mapCenter.value = {
+          lat: newLocation.latitude,
+          lng: newLocation.longitude
+        }
+        showNotification('New location received')
+      }
+    } catch (error) {
+      showNotification('Error processing WebSocket message', 'error')
+    }
+  }
+
+  ws.onerror = () => {
+    showNotification('WebSocket connection error', 'error')
+  }
+
+  ws.onclose = () => {
+    console.log('WebSocket disconnected')
+    // Attempt to reconnect after 5 seconds
+    setTimeout(setupWebSocket, 5000)
   }
 }
 
@@ -233,7 +264,7 @@ const onMapClick = (e: google.maps.MapMouseEvent) => {
   if (e.latLng) {
     selectedLocation.value = {
       lat: e.latLng.lat(),
-      lng: e.latLng.lng(),
+      lng: e.latLng.lng()
     }
     mapCenter.value = selectedLocation.value
   }
@@ -241,23 +272,32 @@ const onMapClick = (e: google.maps.MapMouseEvent) => {
 
 // Save location to backend
 const saveLocation = async () => {
-  if (!selectedLocation.value || !vehicle.value) return
+  if (!selectedLocation.value) return
 
   saving.value = true
   try {
-    const newLocation: LocationPoint = {
-      lat: selectedLocation.value.lat,
-      lng: selectedLocation.value.lng,
-      timestamp: new Date().toISOString(),
+    const newLocation = {
+      vehicleId: vehicleId.value,
+      latitude: selectedLocation.value.lat,
+      longitude: selectedLocation.value.lng
     }
-
-    await axios.post(`/api/vehicles/${vehicleId.value}/locations`, newLocation)
-    locationHistory.value = [newLocation, ...locationHistory.value]
-    hasLocation.value = true
-    vehicle.value.lastUpdated = newLocation.timestamp
-    selectedLocation.value = null
-
-    showNotification('Location saved successfully')
+    const response = await axios.post(`/api/locations/${vehicleId.value}`, newLocation)
+    if (response.data.success) {
+      const savedLocation: LocationHistory = {
+        locationId: response.data.locationId || crypto.randomUUID(),
+        vehicleId: vehicleId.value,
+        latitude: newLocation.latitude,
+        longitude: newLocation.longitude,
+        recordedAt: new Date().toISOString()
+      }
+      locationHistory.value = [savedLocation, ...locationHistory.value]
+      hasLocation.value = true
+      selectedLocation.value = null
+      mapCenter.value = { lat: savedLocation.latitude, lng: savedLocation.longitude }
+      showNotification('Location saved successfully')
+    } else {
+      throw new Error(response.data.message)
+    }
   } catch (error) {
     showNotification('Failed to save location', 'error')
   } finally {
@@ -272,9 +312,17 @@ const showNotification = (message: string, color: string = 'success') => {
   snackbar.value = true
 }
 
-// Initialize
+// Initialize and cleanup
 onMounted(() => {
-  fetchVehicleData()
+  fetchLocationHistory()
+  setupWebSocket()
+})
+
+onUnmounted(() => {
+  if (ws) {
+    ws.close()
+    ws = null
+  }
 })
 </script>
 
@@ -317,7 +365,7 @@ onMounted(() => {
 
 .info-window {
   padding: 8px;
-  min-width: 200px;
+  min-width: 150px;
   font-size: 14px;
 }
 
@@ -336,4 +384,3 @@ onMounted(() => {
   }
 }
 </style>
-  
