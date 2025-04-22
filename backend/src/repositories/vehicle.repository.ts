@@ -27,7 +27,14 @@ export class VehicleRepository{
 
     async getAllVehicles() : Promise<Vehicle[] | null>{
         try{
-            return await this.repository.find();
+            return await this.repository
+            .createQueryBuilder('vehicle')
+            .leftJoinAndSelect('vehicle.driver', 'users')
+            .select([
+                'vehicle',
+                'users.username' 
+            ])
+            .getMany();
         }catch(error: any){
             console.error('Error in fetching all the vehicles: ', error.message);
             throw new error('Error in fetching all the vehicles');

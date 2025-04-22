@@ -77,6 +77,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { DataTableHeader } from 'vuetify'
+import axios from 'axios'
 
 // Props
 defineProps<{
