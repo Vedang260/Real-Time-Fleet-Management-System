@@ -127,12 +127,18 @@
     </v-card>
 
     <!-- Snackbar -->
-    <v-snackbar v-model="snackbar" :color="snackbarColor" top timeout="3000">
-      {{ snackbarMessage }}
-      <template #action="{ attrs }">
-        <v-btn text v-bind="attrs" @click="snackbar = false">Close</v-btn>
-      </template>
-    </v-snackbar>
+    <v-snackbar
+              v-model="snackbar"
+              :color="snackbarColor"
+              timeout="3000"
+              rounded="pill"
+              top
+            >
+              {{ snackbarMessage }}
+              <template v-slot:actions>
+                <v-btn text @click="snackbar = false">Close</v-btn>
+              </template>
+            </v-snackbar>
   </div>
 </template>
 
