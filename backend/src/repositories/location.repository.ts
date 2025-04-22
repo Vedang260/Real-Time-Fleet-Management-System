@@ -10,7 +10,7 @@ export class LocationRepository{
         this.locationsRepository = fastify.db.getRepository(Location);
     }   
     
-    async saveLocation(locationDto: LocationDto){
+    async saveLocation(locationDto: LocationDto): Promise<Location>{
         try{
             const newLocation = this.locationsRepository.create(locationDto);
             return await this.locationsRepository.save(newLocation);
@@ -20,11 +20,12 @@ export class LocationRepository{
         }
     }
 
-    // async getLocationHistory(vehicleId: string){
-    //     try{
-    //         return await this.locationsRepository.find({where: {vehicleId}});
-    //     }catch(error){
-
-    //     }
-    // }
+    async getLocationHistory(vehicleId: string): Promise<Location[] | null>{
+        try{
+            return await this.locationsRepository.find({where: {vehicleId}});
+        }catch(error: any){
+            console.error('Error in fetching the Location History: ', error.message);
+            throw new error('Failed to fetch the Location History');
+        }
+    }
 }

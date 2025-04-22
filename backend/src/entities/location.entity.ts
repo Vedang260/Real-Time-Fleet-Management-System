@@ -6,6 +6,9 @@ export class Location {
   @PrimaryGeneratedColumn('uuid')
   locationId: string;
 
+  @Column('uuid')
+  vehicleId: string;
+
   @ManyToOne(() => Vehicle, (vehicle) => vehicle.locations, { onDelete: 'CASCADE' })
   @JoinColumn({name: 'vehicleId'})
   vehicle: Vehicle;
