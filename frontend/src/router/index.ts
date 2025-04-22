@@ -29,9 +29,10 @@ const router = createRouter({
       component: AdminPage
     },
     {
-      path: '/map',
+      path: '/vehicles/track/:vehicleId',
       name: 'Map',
-      component: Map
+      component: Map,
+      props: true
     }
   ],
 })

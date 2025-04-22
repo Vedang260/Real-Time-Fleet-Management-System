@@ -83,7 +83,18 @@
           </v-tooltip>
         </template>
       </VehicleTable>
-
+      <v-snackbar
+              v-model="snackbar"
+              :color="snackbarColor"
+              timeout="3000"
+              rounded="pill"
+              top
+            >
+              {{ snackbarMessage }}
+              <template v-slot:actions>
+                <v-btn text @click="snackbar = false">Close</v-btn>
+              </template>
+      </v-snackbar>
       <!-- Delete Confirmation Dialog -->
       <v-dialog v-model="deleteDialog" max-width="500">
         <v-card>
@@ -117,13 +128,17 @@ const loading = ref(false)
 const deleteDialog = ref(false)
 const selectedVehicle = ref<Vehicle | null>(null)
 const router = useRouter()
+const snackbar = ref(false);
+const snackbarMessage = ref('');
+const snackbarColor = ref('error');
+
+const storedUser = customStorage.getItem('auth');
+const user = (storedUser ? JSON.parse(storedUser) : null);
 
 // Fetch vehicles from API
 const fetchVehicles = async () => {
   loading.value = true
   try {
-    const storedUser = customStorage.getItem('auth');
-    const user = (storedUser ? JSON.parse(storedUser) : null)
     const response = await axios.get<GetVehiclesResponse>(`http://localhost:8000/api/vehicles`, { 
         withCredentials: true, 
         headers: {
@@ -132,11 +147,16 @@ const fetchVehicles = async () => {
         }
       });
     if(response.data.success){
+        snackbarMessage.value = response.data.message;
+        snackbarColor.value = 'success';
+        snackbar.value = true;
        vehicles.value = response.data.vehicles;
     }
     
-  } catch (error) {
-    console.error('Failed to fetch vehicles:', error)
+  } catch (error: any) {
+    snackbarMessage.value = error.message;
+    snackbarColor.value = 'error';
+    snackbar.value = true;
   } finally {
     loading.value = false
   }
@@ -164,11 +184,24 @@ const deleteVehicle = async () => {
 
   loading.value = true
   try {
-    await fetch(`/api/vehicles/${selectedVehicle.value.vehicleId}`, { method: 'DELETE' }) // Call backend
+    const response = await axios.delete<any>(`http://localhost:8000/api/vehicles/${selectedVehicle.value.vehicleId}`, { 
+        withCredentials: true, 
+        headers: {
+          'Authorization': `Bearer ${user.token}`,
+          'Content-Type': 'application/json'
+        }
+    });
     vehicles.value = vehicles.value.filter(v => v.vehicleId !== selectedVehicle.value?.vehicleId)
     deleteDialog.value = false
-  } catch (error) {
-    console.error('Delete failed:', error)
+    if(response.data.success){
+        snackbarMessage.value = response.data.message;
+        snackbarColor.value = 'success';
+        snackbar.value = true;
+    }
+  } catch (error: any) {
+    snackbarMessage.value = error.message;
+    snackbarColor.value = 'error';
+    snackbar.value = true;
   } finally {
     loading.value = false
   }
