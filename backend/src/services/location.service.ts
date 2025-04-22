@@ -32,7 +32,18 @@ export class LocationService{
 
     async getLocationHistory(vehicleId: string){
         try{
-            
+            const locations = await this.locationRepository.getLocationHistory(vehicleId);
+            if(locations){
+                return{
+                    success: true,
+                    message: 'Location History is fetched successfully',
+                    locationHistory: locations 
+                }
+            }
+            return{
+                success: false,
+                message: 'Failed to fetch the location History'
+            }
         }catch(error: any){
             console.error('Error in fetching the location History: ', error.message);
             return{
