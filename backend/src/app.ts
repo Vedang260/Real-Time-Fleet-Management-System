@@ -9,6 +9,7 @@ import { authRoutes } from './routes/auth.routes';
 import { vehicleRoutes } from './routes/vehicle.routes';
 import 'reflect-metadata';
 import dotenv from 'dotenv';
+import { locationRoutes } from './routes/location.routes';
 
 dotenv.config();
 const app: FastifyInstance = Fastify({ logger: true });
@@ -34,6 +35,8 @@ app.register(swaggerPlugin);
 
 app.register(authRoutes, { prefix: '/api/auth' });
 app.register(vehicleRoutes, { prefix: '/api/vehicles'});
+app.register(locationRoutes, { prefix: '/api/locations'});
+
 const start = async () => {
   try {
     await app.listen({ port: parseInt(process.env.PORT || '8000') });
