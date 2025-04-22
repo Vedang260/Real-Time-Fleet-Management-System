@@ -14,8 +14,9 @@ export class LocationController{
         reply.send(result);
     }
 
-    fetchLocationHistory = async ( request: FastifyRequest<{ Body: {vehicleId: string}}>, reply: FastifyReply) => {
-        const result = await this.locationService.getLocationHistory(request.body.vehicleId);
+    fetchLocationHistory= async (request: FastifyRequest<{ Params: { vehicleId: string } }>, reply: FastifyReply) => {
+        const { vehicleId } = request.params;
+        const result = await this.locationService.getLocationHistory(vehicleId);
         reply.send(result);
     }
 }

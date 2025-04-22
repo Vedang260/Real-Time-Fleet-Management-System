@@ -25,4 +25,10 @@ export async function locationRoutes(fastify: FastifyInstance){
       },
     },
   },  locationController.saveLocation.bind(locationController));
+
+  fastify.get<{
+    Params: {
+      vehicleId: string;
+    };
+  }>(`/history/:vehicleId`, { preHandler: [fastify.authenticate, fastify.authorizeRoles(Role.ADMIN, Role.DRIVER, Role.MANAGER)] }, locationController.fetchLocationHistory.bind(locationController));
 }
