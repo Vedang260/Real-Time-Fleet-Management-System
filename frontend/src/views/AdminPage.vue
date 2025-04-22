@@ -1,39 +1,199 @@
 <template>
-    <Navbar />
-    <!-- Add your button with navigation here -->
-    <button 
-      @click="navigateToPage"
-      class="navigation-button"
-    >
-      Go to Other Page
-    </button>
-  </template>
-  
-  <script setup>
-  import Navbar from '@/components/Navbar.vue';
-  import { useRouter } from 'vue-router';
-  
-  const router = useRouter();
-  
-  const navigateToPage = () => {
-    router.push('/map');
-  };
-  </script>
-  
-  <style scoped>
-  .navigation-button {
-    padding: 10px 20px;
-    background-color: #4CAF50; /* Green background */
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    margin: 20px;
-    transition: background-color 0.3s;
+  <Navbar />
+  <div class="admin-page">
+    <v-container>
+      <VehicleTable 
+        :vehicles="vehicles" 
+        :loading="loading"
+        @edit="editVehicle"
+        @delete="confirmDelete"
+        @track="trackVehicle"
+        @add-routes="addRoutes"
+      >
+        <template #table-actions>
+          <v-btn 
+            color="primary" 
+            rounded="lg"
+            class="gradient-button"
+            @click="navigateToAddVehicle"
+          >
+            <v-icon left>mdi-plus</v-icon>
+            Add New Vehicle
+          </v-btn>
+        </template>
+
+        <template #item-actions="{ item }">
+          <v-tooltip bottom>
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                icon
+                color="primary"
+                class="mr-2"
+                @click.stop="editVehicle(item)"
+              >
+                <v-icon>mdi-pencil</v-icon>
+              </v-btn>
+            </template>
+            <span>Edit Vehicle</span>
+          </v-tooltip>
+
+          <v-tooltip bottom>
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                icon
+                color="error"
+                class="mr-2"
+                @click.stop="confirmDelete(item)"
+              >
+                <v-icon>mdi-delete</v-icon>
+              </v-btn>
+            </template>
+            <span>Delete Vehicle</span>
+          </v-tooltip>
+
+          <v-tooltip bottom>
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                icon
+                color="info"
+                class="mr-2"
+                @click.stop="trackVehicle(item)"
+              >
+                <v-icon>mdi-map-marker-path</v-icon>
+              </v-btn>
+            </template>
+            <span>Track Vehicle</span>
+          </v-tooltip>
+
+          <v-tooltip bottom>
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                icon
+                color="success"
+                @click.stop="addRoutes(item)"
+              >
+                <v-icon>mdi-routes</v-icon>
+              </v-btn>
+            </template>
+            <span>Add Routes</span>
+          </v-tooltip>
+        </template>
+      </VehicleTable>
+
+      <!-- Delete Confirmation Dialog -->
+      <v-dialog v-model="deleteDialog" max-width="500">
+        <v-card>
+          <v-card-title class="text-h5">Confirm Delete</v-card-title>
+          <v-card-text>
+            Are you sure you want to delete vehicle {{ selectedVehicle?.licensePlate }}?
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="grey" text @click="deleteDialog = false">Cancel</v-btn>
+            <v-btn color="error" text @click="deleteVehicle">Delete</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </v-container>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import VehicleTable from '@/components/VehicleTable.vue'
+import type { Vehicle } from '@/types/vehicle'
+import Navbar from '@/components/Navbar.vue'
+// State
+const vehicles = ref<Vehicle[]>([])
+const loading = ref(false)
+const deleteDialog = ref(false)
+const selectedVehicle = ref<Vehicle | null>(null)
+const router = useRouter()
+
+// Fetch vehicles from API
+const fetchVehicles = async () => {
+  loading.value = true
+  try {
+    const response = await fetch('/api/vehicles') // Replace with your actual backend URL
+    const data = await response.json()
+    vehicles.value = data
+  } catch (error) {
+    console.error('Failed to fetch vehicles:', error)
+  } finally {
+    loading.value = false
   }
-  
-  .navigation-button:hover {
-    background-color: #45a049; /* Darker green on hover */
+}
+
+onMounted(fetchVehicles)
+
+// Navigation
+const navigateToAddVehicle = () => {
+  router.push('/admin/vehicles/add')
+}
+
+// Vehicle Actions
+const editVehicle = (vehicle: Vehicle) => {
+  router.push(`/admin/vehicles/edit/${vehicle.vehicleId}`)
+}
+
+const confirmDelete = (vehicle: Vehicle) => {
+  selectedVehicle.value = vehicle
+  deleteDialog.value = true
+}
+
+const deleteVehicle = async () => {
+  if (!selectedVehicle.value) return
+
+  loading.value = true
+  try {
+    await fetch(`/api/vehicles/${selectedVehicle.value.vehicleId}`, { method: 'DELETE' }) // Call backend
+    vehicles.value = vehicles.value.filter(v => v.vehicleId !== selectedVehicle.value?.vehicleId)
+    deleteDialog.value = false
+  } catch (error) {
+    console.error('Delete failed:', error)
+  } finally {
+    loading.value = false
   }
-  </style>
+}
+
+const trackVehicle = (vehicle: Vehicle) => {
+  router.push(`/vehicles/track/${vehicle.vehicleId}`)
+}
+
+const addRoutes = (vehicle: Vehicle) => {
+  router.push(`/admin/vehicles/routes/${vehicle.vehicleId}`)
+}
+
+</script>
+
+<style scoped>
+.admin-page {
+  background: linear-gradient(135deg, #f9fbfd 0%, #e8ecef 100%);
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.gradient-button {
+  background: linear-gradient(90deg, #2196F3 0%, #4CAF50 100%);
+  color: white !important;
+  transition: all 0.3s ease;
+}
+
+.gradient-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.v-btn {
+  transition: all 0.2s ease;
+}
+
+.v-btn:hover {
+  transform: scale(1.1);
+}
+</style>
