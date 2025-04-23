@@ -143,6 +143,8 @@
   // Location state
   const startLocation = ref<{ lat: number; lng: number } | null>(null)
   const destinationLocation = ref<{ lat: number; lng: number } | null>(null)
+  const startPlaceName = ref<string>('')
+  const destinationPlaceName = ref<string>('')
   const saving = ref(false)
   
   // Map state
@@ -169,6 +171,8 @@
       lat: place.geometry.location.lat(),
       lng: place.geometry.location.lng(),
     }
+    startPlaceName.value = place.formatted_address
+    console.log("Start: ", startPlaceName.value);
     updateMapCenter()
   }
   
@@ -179,6 +183,8 @@
       lat: place.geometry.location.lat(),
       lng: place.geometry.location.lng(),
     }
+    destinationPlaceName.value = place.formatted_address
+    console.log("Destination: ", destinationPlaceName.value);
     updateMapCenter()
   }
   
@@ -204,11 +210,13 @@
           lat: e.latLng.lat(),
           lng: e.latLng.lng(),
         }
+        startPlaceName.value = `Lat: ${e.latLng.lat().toFixed(6)}, Lng: ${e.latLng.lng().toFixed(6)}`
       } else if (!destinationLocation.value) {
         destinationLocation.value = {
           lat: e.latLng.lat(),
           lng: e.latLng.lng(),
         }
+        destinationPlaceName.value = `Lat: ${e.latLng.lat().toFixed(6)}, Lng: ${e.latLng.lng().toFixed(6)}`
       }
       updateMapCenter()
     }
@@ -222,6 +230,8 @@
     try {
       const routeData = {
         vehicleId: vehicleId.value,
+        startingPlaceName: startPlaceName.value,
+        destinationPlaceName: destinationPlaceName.value,
         startingLocation: {
           latitude: startLocation.value.lat,
           longitude: startLocation.value.lng,
@@ -249,6 +259,8 @@
         // Reset locations after saving
         startLocation.value = null
         destinationLocation.value = null
+        startPlaceName.value = ""
+        destinationPlaceName.value = ""
         mapCenter.value = { lat: 23.04315296146998, lng: 72.54975871427914 }
       } else {
         throw new Error(response.data.message || 'Failed to save route')
