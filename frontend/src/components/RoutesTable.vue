@@ -1,5 +1,5 @@
 <template>
-    <v-card class="vehicle-card" elevation="8" rounded="xl">
+    <v-card class="routes-card" elevation="8" rounded="xl">
       <v-card-title class="text-h4 font-weight-bold gradient-text">
         <v-icon large left>mdi-truck</v-icon>
         Choose Your Route
@@ -7,7 +7,7 @@
       
       <v-data-table
         :headers="filteredHeaders"
-        :items="vehicles"
+        :items="routes"
         :items-per-page="itemsPerPage"
         :page.sync="currentPage"
         :search="searchQuery"
@@ -99,7 +99,7 @@
   
   // Table headers with proper typing
   const headers: DataTableHeader[] = [
-    { title: 'ID', key: 'vehicleId', width: '100px' },
+    { title: 'ID', key: 'routesId', width: '100px' },
     { title: 'Starting Location', key: 'startingLocationName' },
     { title: 'Destination Location', key: 'destinationLocationName' },
     { title: 'Status', key: 'status', align: 'center' },
@@ -112,17 +112,16 @@
   // Helper methods
   const getStatusColor = (status: string): string => {
     const statusMap: Record<string, string> = {
-      'Active': 'success',
-      'Inactive': 'error',
-      'Maintenance': 'warning',
-      'Available': 'primary'
+      'completed': 'success',
+      'pending': 'warning',
+      'active': 'primary'
     }
     return statusMap[status] || 'grey'
   }
   </script>
   
   <style scoped>
-  .vehicle-card {
+  .routes-card {
     background: white;
     padding: 20px;
     margin: 16px;
