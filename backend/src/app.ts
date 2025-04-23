@@ -1,4 +1,4 @@
-import Fastify, { FastifyInstance } from 'fastify';
+import Fastify, { fastify, FastifyInstance } from 'fastify';
 import cors, { fastifyCors } from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import dbPlugin from './plugins/db';
@@ -9,6 +9,7 @@ import { authRoutes } from './routes/auth.routes';
 import { vehicleRoutes } from './routes/vehicle.routes';
 import 'reflect-metadata';
 import dotenv from 'dotenv';
+import fastifyWebsocket from '@fastify/websocket';
 import { locationRoutes } from './routes/location.routes';
 
 dotenv.config();
@@ -18,27 +19,35 @@ app.register(fastifyCors, {
   origin: 'http://localhost:5173',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: [
-    'Origin',
+   'Origin',
     'X-Requested-With',
     'Content-Type',
     'Accept',
-    'Authorization'
+    'Authorization',
+    'Upgrade', // WebSocket headers
+    'Connection',
+    'Sec-WebSocket-Key',
+    'Sec-WebSocket-Version',
   ],
-  credentials: true
+  credentials: true,
 })
 
 app.register(helmet);
 app.register(dbPlugin);
 app.register(jwtPlugin);
 app.register(swaggerPlugin);
-
+app.register(websocketPlugin);
 
 app.register(authRoutes, { prefix: '/api/auth' });
 app.register(vehicleRoutes, { prefix: '/api/vehicles'});
-app.register(locationRoutes, { prefix: '/api/locations'});
 
 const start = async () => {
   try {
+    app.ready(err => {
+      if (err) throw err;
+      console.log(app.printRoutes());
+    });
+    
     await app.listen({ port: parseInt(process.env.PORT || '8000') });
     app.log.info(`Server running on http://localhost:${process.env.PORT || 8000}`);
   } catch (err) {

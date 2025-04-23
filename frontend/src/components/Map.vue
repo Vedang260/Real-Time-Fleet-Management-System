@@ -5,7 +5,7 @@
         <v-icon large left>mdi-map-marker-path</v-icon>
         <v-toolbar-title class="font-weight-bold">Vehicle Tracking</v-toolbar-title>
       </v-toolbar>
-
+ 
       <v-card-text>
         <!-- Search and Controls -->
         <div class="map-controls">
@@ -22,7 +22,7 @@
               ></v-text-field>
             </template>
           </GMapAutocomplete>
-
+ 
           <v-btn
             v-if="!hasLocation && selectedLocation"
             color="secondary"
@@ -35,7 +35,7 @@
             Save Location
           </v-btn>
         </div>
-
+ 
         <!-- Google Map -->
         <div class="map-wrapper">
           <GMapMap
@@ -59,7 +59,7 @@
                 </div>
               </GMapInfoWindow>
             </GMapMarker>
-
+ 
             <!-- Car Marker (Latest Position) -->
             <GMapMarker
               v-if="vehiclePosition"
@@ -72,7 +72,7 @@
                 </div>
               </GMapInfoWindow>
             </GMapMarker>
-
+ 
             <!-- Location History Path -->
             <GMapPolyline
               v-if="locationHistory.length > 1"
@@ -83,7 +83,7 @@
                 strokeOpacity: 0.8
               }"
             />
-
+ 
             <!-- Selected Location Marker -->
             <GMapMarker
               v-if="selectedLocation && !hasLocation"
@@ -95,7 +95,7 @@
             />
           </GMapMap>
         </div>
-
+ 
         <!-- Location History -->
         <v-expansion-panels v-if="hasLocation" class="mt-4">
           <v-expansion-panel>
@@ -123,7 +123,7 @@
         </v-expansion-panels>
       </v-card-text>
     </v-card>
-
+ 
     <!-- Snackbar -->
     <v-snackbar
               v-model="snackbar"
@@ -139,7 +139,7 @@
       </v-snackbar>
   </div>
 </template>
-
+ 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
@@ -148,16 +148,16 @@ import axios from 'axios'
 import type { LocationHistory, LocationHistoryResponse } from '@/types/location'
 import { customStorage } from '@/utils/customStorage'
 
-// Route params
 const route = useRoute()
 const vehicleId = computed(() => route.params.vehicleId as string)
+console.log("Vehicle Id: ", vehicleId.value);
 
 // Location state
 const locationHistory = ref<LocationHistory[]>([])
 const hasLocation = ref(false)
 const selectedLocation = ref<{ lat: number; lng: number } | null>(null)
 const saving = ref(false)
-
+ 
 // Map state
 const mapRef = ref(null)
 const mapCenter = ref({ lat: 23.04315296146998, lng: 72.54975871427914 }) // Default: Ahmedabad
@@ -168,105 +168,107 @@ const vehiclePosition = computed(() => {
     recordedAt: locationHistory.value[0].recordedAt
   } : null
 })
-
+ 
 // Car icon
 const carIcon = {
   url: 'https://cdn-icons-png.flaticon.com/512/744/744465.png', // Car icon
   scaledSize: { width: 48, height: 48 },
   anchor: { x: 24, y: 24 }
 }
-
+ 
 // Marker icons for history
 const getMarkerIcon = (index: number) => ({
   url: index === 0 ? 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png' : 'https://maps.google.com/mapfiles/ms/icons/grey-dot.png',
   scaledSize: { width: 24, height: 24 }
 })
-
+ 
 // Notification state
 const snackbar = ref(false);
 const snackbarMessage = ref('');
 const snackbarColor = ref('error');
-
+ 
 // Auth
 const storedUser = customStorage.getItem('auth');
 const user = (storedUser ? JSON.parse(storedUser) : null);
-
+ 
 // WebSocket
-let ws: WebSocket | null = null
-
+let ws: WebSocket |null = null
+ 
 // Format timestamp
 const formatTimestamp = (timestamp: string) => {
   if (!timestamp) return 'N/A'
   return format(new Date(timestamp), 'PPpp')
 }
 
-// Fetch location history
-const fetchLocationHistory = async () => {
-  try {
-    const response = await axios.get<LocationHistoryResponse>(`http://localhost:8000/api/locations/history/${vehicleId.value}`, {
-      withCredentials: true, 
-        headers: {
-          'Authorization': `Bearer ${user.token}`,
-          'Content-Type': 'application/json'
-        }
-    });
-    if (response.data.success) {
-
-      locationHistory.value = response.data.locationHistory
-        .sort((a: LocationHistory, b: LocationHistory) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime())
-      hasLocation.value = locationHistory.value.length > 0
-      if (hasLocation.value) {
-        mapCenter.value = {
-          lat: locationHistory.value[0].latitude,
-          lng: locationHistory.value[0].longitude
-        }
-      } else {
-        showNotification('No locations found. Please select a location on the map.')
-      }
-    } else {
-      throw new Error(response.data.message)
-    }
-  } catch (error) {
-    showNotification('Failed to load location history', 'error')
-  }
-}
-
 // Setup WebSocket
 const setupWebSocket = () => {
-  ws = new WebSocket(`ws://your-backend/locations/${vehicleId.value}`)
-  
+ // ws = new WebSocket(`ws://localhost:8000/ws-test`);
+  ws = new WebSocket(`ws://localhost:8000/ws`)
+ 
   ws.onopen = () => {
     console.log('WebSocket connected')
+    // Send initial message to request history
+    ws?.send(JSON.stringify({
+      type: "fetchHistory",
+      payload: {
+        vehicleId: vehicleId.value
+      }
+    }));
   }
-
+ 
   ws.onmessage = (event) => {
     try {
-      const newLocation: LocationHistory = JSON.parse(event.data)
-      if (newLocation.vehicleId === vehicleId.value) {
-        locationHistory.value = [newLocation, ...locationHistory.value]
-          .sort((a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime())
-        mapCenter.value = {
-          lat: newLocation.latitude,
-          lng: newLocation.longitude
+      const data = JSON.parse(event.data);
+      console.log("data ", data);
+      if (data.type === 'history') {
+        // Handle initial location history
+        const response: LocationHistoryResponse = data
+        if (response.success) {
+          locationHistory.value = response.locationHistory.sort(
+            (a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime()
+          )
+          hasLocation.value = locationHistory.value.length > 0
+          if (hasLocation.value) {
+            mapCenter.value = {
+              lat: locationHistory.value[0].latitude,
+              lng: locationHistory.value[0].longitude
+            }
+          } else {
+            showNotification('No locations found. Please select a location on the map.')
+          }
+        } else {
+          showNotification(response.message, 'error')
         }
-        showNotification('New location received')
+      } else if (data.type === 'newLocation') {
+        // Handle new location update
+        const newLocation: LocationHistory = data.location
+        if (newLocation.vehicleId === vehicleId.value) {
+          locationHistory.value = [newLocation, ...locationHistory.value].sort(
+            (a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime()
+          )
+          mapCenter.value = {
+            lat: newLocation.latitude,
+            lng: newLocation.longitude
+          }
+          showNotification('New location received')
+        }
       }
     } catch (error) {
       showNotification('Error processing WebSocket message', 'error')
     }
   }
-
+ 
   ws.onerror = () => {
     showNotification('WebSocket connection error', 'error')
   }
-
+ 
   ws.onclose = () => {
     console.log('WebSocket disconnected')
     // Attempt to reconnect after 5 seconds
     setTimeout(setupWebSocket, 5000)
   }
 }
-
+ 
 // Handle place selection from autocomplete
 const onPlaceChanged = (place: google.maps.places.PlaceResult) => {
   if (!place.geometry?.location) return
@@ -275,7 +277,7 @@ const onPlaceChanged = (place: google.maps.places.PlaceResult) => {
   selectedLocation.value = { lat, lng }
   mapCenter.value = { lat, lng }
 }
-
+ 
 // Handle map click for location selection
 const onMapClick = (e: google.maps.MapMouseEvent) => {
   if (hasLocation.value) return
@@ -287,11 +289,11 @@ const onMapClick = (e: google.maps.MapMouseEvent) => {
     mapCenter.value = selectedLocation.value
   }
 }
-
+ 
 // Save location to backend
 const saveLocation = async () => {
   if (!selectedLocation.value) return
-
+ 
   saving.value = true
   try {
     const newLocation = {
@@ -299,7 +301,15 @@ const saveLocation = async () => {
       latitude: selectedLocation.value.lat,
       longitude: selectedLocation.value.lng
     }
-    const response = await axios.post(`/api/locations/${vehicleId.value}`, newLocation)
+    const response = await axios.post(`http://localhost:8000/locations/${vehicleId.value}`, newLocation,
+    {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+          'Content-Type': 'application/json'
+        },
+        withCredentials: true
+      }
+    );
     if (response.data.success) {
         snackbarMessage.value = response.data.message;
         snackbarColor.value = 'success';
@@ -325,20 +335,19 @@ const saveLocation = async () => {
     saving.value = false
   }
 }
-
+ 
 // Show notification
 const showNotification = (message: string, color: string = 'success') => {
   snackbarMessage.value = message
   snackbarColor.value = color
   snackbar.value = true
 }
-
+ 
 // Initialize and cleanup
 onMounted(() => {
-  fetchLocationHistory()
   setupWebSocket()
 })
-
+ 
 onUnmounted(() => {
   if (ws) {
     ws.close()
@@ -346,31 +355,31 @@ onUnmounted(() => {
   }
 })
 </script>
-
+ 
 <style scoped>
 .tracking-container {
   background: linear-gradient(135deg, #e3f2fd 0%, #e8f5e9 100%);
   padding: 24px;
   min-height: 100vh;
 }
-
+ 
 .map-card {
   background: white;
   border-radius: 16px;
   overflow: hidden;
 }
-
+ 
 .map-controls {
   display: flex;
   align-items: center;
   gap: 16px;
   margin-bottom: 16px;
 }
-
+ 
 .search-bar {
   flex: 1;
 }
-
+ 
 .map-wrapper {
   width: 100%;
   height: 60vh;
@@ -379,27 +388,27 @@ onUnmounted(() => {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   transition: all 0.3s ease;
 }
-
+ 
 .map-wrapper:hover {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
-
+ 
 .info-window {
   padding: 8px;
   min-width: 150px;
   font-size: 14px;
 }
-
+ 
 @media (max-width: 768px) {
   .map-controls {
     flex-direction: column;
     gap: 12px;
   }
-
+ 
   .map-wrapper {
     height: 50vh;
   }
-
+ 
   .tracking-container {
     padding: 16px;
   }
