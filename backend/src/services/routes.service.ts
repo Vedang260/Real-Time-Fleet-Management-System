@@ -17,6 +17,8 @@ export class RoutesService{
             const coordinates = await generateRoute(assignRoutesDto.startingLocation, assignRoutesDto.destinationLocation);
             const routesDto: RoutesDto = {
                 vehicleId: assignRoutesDto.vehicleId,
+                startingPlaceName: assignRoutesDto.startingPlaceName,
+                destinationPlaceName: assignRoutesDto.destinationPlaceName,
                 coordinates,
             };
             const newRoute = await this.routesRepository.saveRoutes(routesDto);
