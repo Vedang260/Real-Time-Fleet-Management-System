@@ -1,6 +1,8 @@
 import { FastifyInstance } from "fastify";
 import { RoutesRepository } from "../repositories/routes.repository";
-import { AssignRoutesDto } from "../dtos/routes.dto";
+import { AssignRoutesDto, RoutesDto } from "../dtos/routes.dto";
+import { generateRoute } from "../utils/generateRoutes.utils";
+import { RouteStatus } from "../enums/routeStatus.enums";
 
 export class RoutesService{
     private routesRepository: RoutesRepository;
@@ -11,16 +13,22 @@ export class RoutesService{
 
     async saveRoute(assignRoutesDto: AssignRoutesDto){
         try{
-            const newVehicle = await this.vehicleRepository.createVehicle(vehicleDto);
-            if(newVehicle){
+            // generating the coordinates from the google maps API
+            const coordinates = await generateRoute(assignRoutesDto.startLocation, assignRoutesDto.destinationLocation);
+            const routesDto: RoutesDto = {
+                vehicleId: assignRoutesDto.vehicleId,
+                coordinates,
+            };
+            const newRoute = await this.routesRepository.saveRoutes(routesDto);
+            if(newRoute){
                 return{
                     success: true,
-                    message: 'New Vehicle is created successfully'
+                    message: 'New Route is created successfully'
                 }
             }
             return{
                 success: false,
-                message: 'Failed to create a new vehicle'
+                message: 'Failed to create a new route'
             }
         }catch(error: any){
             console.error('Error in creating a new Vehicle: ', error.message);
@@ -31,19 +39,35 @@ export class RoutesService{
         }
     }
     
-    async getRoute(){
+    async getRoutes(vehicleId: string){
         try{
-            const vehicles = await this.vehicleRepository.getAllVehicles();
+            const routes = await this.routesRepository.fetchRoutes(vehicleId);
             return{
                 success: true,
                 message: 'All routes are fetched successfully',
-                vehicles: vehicles
+                routes: routes
             }
         }catch(error: any){
-            console.error('Error in fetching all the vehicles: ', error.message);
+            console.error('Error in fetching all the Routes: ', error.message);
             return{
                 success: false,
-                message: 'Failed to fetch all the vehicles'
+                message: 'Failed to fetch all the Routes'
+            }
+        }
+    }
+
+    async updateStatus(routesId: string, status: RouteStatus){
+        try{
+            await this.routesRepository.updateStatus(routesId, status);
+            return{
+                success: true,
+                message: `Routes status is changed to ${status}`
+            }
+        }catch(error: any){
+            console.error('Error in updating the status of the route: ', error.message);
+            return {
+                success: false,
+                message: 'Failed to update the routes status'
             }
         }
     }
