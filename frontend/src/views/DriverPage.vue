@@ -5,8 +5,7 @@
         <VehicleTable 
           :vehicles="vehicles" 
           :loading="loading"
-          @track="trackVehicle"
-          @add-routes="addRoutes"
+          @view-routes="viewRoutes"
         >
           <template #item-actions="{ item }">
             <v-tooltip bottom>
@@ -14,28 +13,13 @@
                 <v-btn
                   v-bind="props"
                   icon
-                  color="info"
-                  class="mr-2"
-                  @click.stop="trackVehicle(item)"
-                >
-                  <v-icon>mdi-map-marker-path</v-icon>
-                </v-btn>
-              </template>
-              <span>Track Vehicle</span>
-            </v-tooltip>
-  
-            <v-tooltip bottom>
-              <template #activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  icon
                   color="success"
-                  @click.stop="addRoutes(item)"
+                  @click.stop="viewRoutes(item)"
                 >
                   <v-icon>mdi-routes</v-icon>
                 </v-btn>
               </template>
-              <span>Add Routes</span>
+              <span>View Routes</span>
             </v-tooltip>
           </template>
         </VehicleTable>
@@ -51,20 +35,6 @@
                   <v-btn text @click="snackbar = false">Close</v-btn>
                 </template>
         </v-snackbar>
-        <!-- Delete Confirmation Dialog -->
-        <v-dialog v-model="deleteDialog" max-width="500">
-          <v-card>
-            <v-card-title class="text-h5">Confirm Delete</v-card-title>
-            <v-card-text>
-              Are you sure you want to delete vehicle {{ selectedVehicle?.licensePlate }}?
-            </v-card-text>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="grey" text @click="deleteDialog = false">Cancel</v-btn>
-              <v-btn color="error" text @click="deleteVehicle">Delete</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
       </v-container>
     </div>
   </template>
@@ -79,9 +49,8 @@
   import { customStorage } from '@/utils/customStorage'
   
   // State
-  const routes = ref<Vehicle[]>([])
+  const vehicles = ref<Vehicle[]>([])
   const loading = ref(false)
-  const deleteDialog = ref(false)
   const selectedVehicle = ref<Vehicle | null>(null)
   const router = useRouter()
   const snackbar = ref(false);
@@ -92,10 +61,10 @@
   const user = (storedUser ? JSON.parse(storedUser) : null);
   
   // Fetch vehicles from API
-  const fetchRoutes = async () => {
+  const fetchVehicles = async () => {
     loading.value = true
     try {
-      const response = await axios.get<GetVehiclesResponse>(`http://localhost:8000/api/vehicles`, { 
+      const response = await axios.get<GetVehiclesResponse>(`http://localhost:8000/api/vehicles/driver/${user.user.userId}`, { 
           withCredentials: true, 
           headers: {
             'Authorization': `Bearer ${user.token}`,
@@ -118,10 +87,10 @@
     }
   }
   
-  onMounted(fetchRoutes)
+  onMounted(fetchVehicles)
   
   const viewRoutes = (vehicle: Vehicle) => {
-    router.push(`/driver/routes/${vehicle.vehicleId}`)
+    router.push(`/view/vehicles/routes/${vehicle.vehicleId}`)
   }
   
   </script>
