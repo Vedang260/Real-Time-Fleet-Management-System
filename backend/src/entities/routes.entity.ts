@@ -14,6 +14,12 @@ export class Routes {
     @JoinColumn({name: 'vehicleId'})
     vehicle: Vehicle;
 
+    @Column()
+    startingPlaceName: string;
+    
+    @Column()
+    destinationPlaceName: string;
+    
     @Column('json')
     coordinates: { latitude: number; longitude: number }[];
 
