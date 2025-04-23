@@ -4,7 +4,7 @@ import { Repository } from "typeorm";
 import { RoutesDto } from "../dtos/routes.dto";
 import { RouteStatus } from "../enums/routeStatus.enums";
 
-export class routesRepository{
+export class RoutesRepository{
     private routesRepository: Repository<Routes>;
     
     constructor(fastify: FastifyInstance) {

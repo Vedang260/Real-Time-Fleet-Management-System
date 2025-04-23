@@ -34,6 +34,7 @@
     "fastify-swagger": "^5.1.1",
     "fastify-typeorm": "^2.1.2",
     "fastify-websocket": "^4.2.2",
+    "googleapis": "^148.0.0",
     "pg": "^8.14.1",
     "reflect-metadata": "^0.2.2",
     "typeorm": "^0.3.22"
