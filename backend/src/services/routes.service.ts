@@ -31,12 +31,12 @@ export class RoutesService{
         }
     }
     
-    async getAllVehicles(){
+    async getRoute(){
         try{
             const vehicles = await this.vehicleRepository.getAllVehicles();
             return{
                 success: true,
-                message: 'All vehicles are fetched successfully',
+                message: 'All routes are fetched successfully',
                 vehicles: vehicles
             }
         }catch(error: any){
