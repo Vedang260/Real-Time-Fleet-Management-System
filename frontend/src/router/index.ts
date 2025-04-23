@@ -6,9 +6,10 @@ import AdminPage from '@/views/AdminPage.vue'
 import Map from '@/components/Map.vue'
 import AddRoutes from '@/components/AddRoutes.vue'
 import DriverPage from '@/views/DriverPage.vue'
+import RoutesPage from '@/views/RoutesPage.vue'
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   routes: [
     {
       path: '/',
@@ -36,6 +37,12 @@ const router = createRouter({
       component: DriverPage
     },
     {
+      path: '/view/vehicles/routes/:vehicleId',
+      name: 'ViewRoutes',
+      component: RoutesPage,
+      props: true
+    },
+    {
       path: '/vehicles/track/:vehicleId',
       name: 'Map',
       component: Map,
@@ -46,7 +53,7 @@ const router = createRouter({
       name: 'AddRoutes',
       component: AddRoutes,
       props: true
-    }
+    },
   ],
 })
 

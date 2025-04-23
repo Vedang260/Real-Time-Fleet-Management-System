@@ -100,8 +100,8 @@
   // Table headers with proper typing
   const headers: DataTableHeader[] = [
     { title: 'ID', key: 'routesId', width: '100px' },
-    { title: 'Starting Location', key: 'startingLocationName' },
-    { title: 'Destination Location', key: 'destinationLocationName' },
+    { title: 'Starting Location', key: 'startingPlaceName' },
+    { title: 'Destination Location', key: 'destinationPlaceName' },
     { title: 'Status', key: 'status', align: 'center' },
     { title: 'Actions', key: 'actions', sortable: false, align: 'center', width: '150px' }
   ]
