@@ -3,6 +3,7 @@ import { User } from './user.entity';
 import { Location } from './location.entity';
 import { Alert } from './alert.entity';
 import { VehicleStatus } from '../enums/vehicleStatus.enums';
+import { Routes } from './routes.entity';
 
 @Entity()
 export class Vehicle {
@@ -35,6 +36,9 @@ export class Vehicle {
   @OneToMany(() => Location, (location) => location.vehicle)
   locations: Location[];
 
+  @OneToMany(() => Routes, (routes) => routes.vehicleId)
+  routes: Routes[];
+  
   @OneToMany(() => Alert, (alert) => alert.vehicle)
   alerts: Alert[];
   
