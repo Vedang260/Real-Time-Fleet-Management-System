@@ -20,6 +20,8 @@
     "@fastify/swagger": "^9.5.0",
     "@fastify/swagger-ui": "^5.2.2",
     "@fastify/websocket": "^11.0.2",
+    "@googlemaps/google-maps-services-js": "^3.4.1",
+    "@mapbox/polyline": "^1.2.1",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
     "class-transformer": "^0.5.1",
