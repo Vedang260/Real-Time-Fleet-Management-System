@@ -14,9 +14,11 @@ export async function routeRoutes(fastify: FastifyInstance){
     schema: {
       body: {
         type: 'object',
-        required: ['vehicleId', 'startingLocation', 'destinationLocation'],
+        required: ['vehicleId', 'startingPlaceName', 'destinationPlaceName', 'startingLocation', 'destinationLocation'],
         properties: {
           vehicleId: { type: 'string' },
+          startingPlaceName: { type: 'string' },
+          destinationPlaceName: { type: 'string' },
           startingLocation: {
             type: 'object',
             required: ['latitude', 'longitude'],
