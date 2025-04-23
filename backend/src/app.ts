@@ -11,6 +11,7 @@ import 'reflect-metadata';
 import dotenv from 'dotenv';
 import fastifyWebsocket from '@fastify/websocket';
 import { locationRoutes } from './routes/location.routes';
+import { routeRoutes } from './routes/routes.routes';
 
 dotenv.config();
 const app: FastifyInstance = Fastify({ logger: true });
@@ -40,6 +41,7 @@ app.register(websocketPlugin);
 
 app.register(authRoutes, { prefix: '/api/auth' });
 app.register(vehicleRoutes, { prefix: '/api/vehicles'});
+app.register(routeRoutes, { prefix: '/api/routes'});
 
 const start = async () => {
   try {

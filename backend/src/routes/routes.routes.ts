@@ -4,7 +4,7 @@ import { Role } from "../enums/role.enums";
 import { AssignRoutesDto } from "../dtos/routes.dto";
 import { RouteStatus } from "../enums/routeStatus.enums";
 
-export async function locationRoutes(fastify: FastifyInstance){
+export async function routeRoutes(fastify: FastifyInstance){
     const routesController = new RoutesController(fastify);
 
   fastify.post<{
