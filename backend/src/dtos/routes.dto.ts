@@ -8,3 +8,8 @@ export interface AssignRoutesDto{
     startLocation: LocationPoint;
     destinationLocation: LocationPoint;
 }
+
+export interface RoutesDto{
+    vehicleId: string;
+    coordinates: LocationPoint[];   
+}
