@@ -14,7 +14,7 @@ export class RoutesService{
     async saveRoute(assignRoutesDto: AssignRoutesDto){
         try{
             // generating the coordinates from the google maps API
-            const coordinates = await generateRoute(assignRoutesDto.startLocation, assignRoutesDto.destinationLocation);
+            const coordinates = await generateRoute(assignRoutesDto.startingLocation, assignRoutesDto.destinationLocation);
             const routesDto: RoutesDto = {
                 vehicleId: assignRoutesDto.vehicleId,
                 coordinates,

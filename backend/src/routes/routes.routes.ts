@@ -20,14 +20,18 @@ export async function routeRoutes(fastify: FastifyInstance){
           startingLocation: {
             type: 'object',
             required: ['latitude', 'longitude'],
-            latitude: { type: 'number' },
-            longitude: { type: 'number' },
+            properties: {
+              latitude: { type: 'number' },
+              longitude: { type: 'number' },
+            }
           },
           destinationLocation: {
             type: 'object',
             required: ['latitude', 'longitude'],
-            latitude: { type: 'number' },
-            longitude: { type: 'number' },
+            properties: {
+              latitude: { type: 'number' },
+              longitude: { type: 'number' },
+            }
           }
         },
       },
@@ -64,7 +68,10 @@ export async function routeRoutes(fastify: FastifyInstance){
                 type: 'object',
                 required: ['status'],
                 properties: {
-                  status: Object.values(RouteStatus)
+                  status: {
+                    type: 'string',
+                    enum: Object.values(RouteStatus),
+                  },
                 },
               },
           },

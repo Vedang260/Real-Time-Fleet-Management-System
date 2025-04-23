@@ -5,7 +5,7 @@ export interface LocationPoint{
 
 export interface AssignRoutesDto{
     vehicleId: string;
-    startLocation: LocationPoint;
+    startingLocation: LocationPoint;
     destinationLocation: LocationPoint;
 }
 
