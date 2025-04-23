@@ -3,7 +3,7 @@ import { RouteStatus } from '../enums/routeStatus.enums';
 import { RoutesService } from '../services/routes.service';
 import { AssignRoutesDto } from '../dtos/routes.dto';
 
-export class VehicleController {
+export class RoutesController {
     private routesService : RoutesService;
 
     constructor(fastify: FastifyInstance) {
@@ -15,8 +15,8 @@ export class VehicleController {
         reply.send(result);
     }
 
-    getRoutes = async ( request: FastifyRequest<{ Body: {vehicleId: string}}>, reply: FastifyReply) => {
-        const { vehicleId } = request.body;
+    getRoutes = async ( request: FastifyRequest<{ Params: {vehicleId: string}}>, reply: FastifyReply) => {
+        const { vehicleId } = request.params;
         const result = await this.routesService.getRoutes(vehicleId);
         reply.send(result);
     }
