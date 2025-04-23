@@ -155,7 +155,7 @@
   const selectedRoute = ref<any>(null);
   
   // WebSocket URL
-  const wsUrl = `ws://localhost:8000/api/vehicles/${vehicleId.value}/location`;
+  const wsUrl = `ws://localhost:8000/api/ws`;
   
   // Auth
   const storedUser = customStorage.getItem('auth');
@@ -278,13 +278,14 @@
   
         ws?.send(
           JSON.stringify({
-            type: 'positionUpdate',
-            vehicleId: vehicleId.value,
-            routeId: routesId.value,
-            latitude: currentPosition.value.lat,
-            longitude: currentPosition.value.lng,
-            timestamp: new Date().toISOString(),
-            stepIndex: currentStep.value,
+            type: 'savePosition',
+            payload: {
+                vehicleId: vehicleId.value,
+                routeId: routesId.value,
+                latitude: currentPosition.value.lat,
+                longitude: currentPosition.value.lng,
+                stepIndex: currentStep.value,
+            }
           })
         );
       } else {

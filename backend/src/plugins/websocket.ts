@@ -22,6 +22,8 @@ const websocketPlugin: FastifyPluginAsync = async (fastify, options) => {
             type: 'historyResponse',
             ...response
           }));
+      }else if(message.type === 'savePosition'){
+        
       }
       // if(message.type === 'SAVE_LOCATION'){
       //   const { vehicleId, lat, lng } = message.payload;

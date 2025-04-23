@@ -1,6 +1,7 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Vehicle } from "./vehicle.entity";
 import { RouteStatus } from "../enums/routeStatus.enums";
+import { Location } from "./location.entity";
 
 @Entity({ name: 'routes' })
 export class Routes {
@@ -14,6 +15,9 @@ export class Routes {
     @JoinColumn({name: 'vehicleId'})
     vehicle: Vehicle;
 
+    @OneToMany(() => Location, (location) => location.route)
+    locations: Location[];
+    
     @Column()
     startingPlaceName: string;
     
