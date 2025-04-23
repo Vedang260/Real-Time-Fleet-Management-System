@@ -27,4 +27,10 @@ export class RoutesController {
         const result = await this.routesService.updateStatus(routesId, status);
         reply.send(result);
     }
+
+    getRouteByRoutesId = async (request: FastifyRequest<{ Params: {routesId: string }}>, reply: FastifyReply) => {
+        const { routesId } = request.params;
+        const result = await this.routesService.getRouteByRoutesId(routesId);
+        reply.send(result);
+    }
 }

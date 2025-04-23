@@ -69,7 +69,7 @@
   const fetchRoutes = async () => {
     loading.value = true
     try {
-      const response = await axios.get<RoutesResponse>(`http://localhost:8000/api/routes/${vehicleId.value}`, { 
+      const response = await axios.get<RoutesResponse>(`http://localhost:8000/api/routes/vehicles/${vehicleId.value}`, { 
           withCredentials: true, 
           headers: {
             'Authorization': `Bearer ${user.token}`,
@@ -97,7 +97,7 @@
   onMounted(fetchRoutes)
   
   const viewOnMap = (routes: Routes) => {
-    router.push(`/driver/view/routes/${routes.routesId}`)
+    router.push(`/driver/${vehicleId.value}/routes/${routes.routesId}`)
   }
   
   </script>

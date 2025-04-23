@@ -7,6 +7,7 @@ import Map from '@/components/Map.vue'
 import AddRoutes from '@/components/AddRoutes.vue'
 import DriverPage from '@/views/DriverPage.vue'
 import RoutesPage from '@/views/RoutesPage.vue'
+import RouteMap from '@/components/RouteMap.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -54,6 +55,12 @@ const router = createRouter({
       component: AddRoutes,
       props: true
     },
+    {
+      path: '/driver/:vehicleId/routes/:routesId',
+      name: 'AddRoutes',
+      component: RouteMap,
+      props: true
+    }
   ],
 })
 

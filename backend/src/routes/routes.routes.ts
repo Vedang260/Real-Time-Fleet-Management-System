@@ -42,12 +42,21 @@ export async function routeRoutes(fastify: FastifyInstance){
 
     fastify.get<{
         Params: {
-        vehicleId: string;
+          vehicleId: string;
         };
-    }>(`/:vehicleId`, 
+    }>(`/vehicles/:vehicleId`, 
         { 
             preHandler: [fastify.authenticate, fastify.authorizeRoles(Role.ADMIN, Role.DRIVER, Role.MANAGER)] 
         }, routesController.getRoutes.bind(routesController));
+
+    fastify.get<{
+      Params: {
+        routesId: string;
+      };
+    }>(`/:routesId`,
+      {
+        preHandler: [fastify.authenticate, fastify.authorizeRoles(Role.ADMIN, Role.DRIVER, Role.MANAGER)] 
+      }, routesController.getRouteByRoutesId.bind(routesController));
 
     fastify.put<{
         Params:{

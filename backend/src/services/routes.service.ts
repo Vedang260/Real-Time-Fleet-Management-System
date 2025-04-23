@@ -58,6 +58,23 @@ export class RoutesService{
         }
     }
 
+    async getRouteByRoutesId(routesId: string){
+        try{
+            const routes = await this.routesRepository.getRoute(routesId);
+            return{
+                success: true,
+                message: 'All routes are fetched successfully',
+                routes: routes
+            }
+        }catch(error: any){
+            console.error('Error in fetching all the Routes: ', error.message);
+            return{
+                success: false,
+                message: 'Failed to fetch all the Routes'
+            }
+        }
+    }
+
     async updateStatus(routesId: string, status: RouteStatus){
         try{
             await this.routesRepository.updateStatus(routesId, status);
