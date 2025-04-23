@@ -212,7 +212,7 @@ const trackVehicle = (vehicle: Vehicle) => {
 }
 
 const addRoutes = (vehicle: Vehicle) => {
-  router.push(`/admin/vehicles/routes/${vehicle.vehicleId}`)
+  router.push(`/vehicles/routes/${vehicle.vehicleId}`)
 }
 
 </script>

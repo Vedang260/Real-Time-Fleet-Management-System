@@ -4,6 +4,7 @@ import RegisterPage from '@/views/RegisterPage.vue'
 import LoginPage from '@/views/LoginPage.vue'
 import AdminPage from '@/views/AdminPage.vue'
 import Map from '@/components/Map.vue'
+import AddRoutes from '@/components/AddRoutes.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,6 +33,12 @@ const router = createRouter({
       path: '/vehicles/track/:vehicleId',
       name: 'Map',
       component: Map,
+      props: true
+    },
+    {
+      path: '/vehicles/routes/:vehicleId',
+      name: 'AddRoutes',
+      component: AddRoutes,
       props: true
     }
   ],
