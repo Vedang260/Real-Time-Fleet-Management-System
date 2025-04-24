@@ -13,6 +13,19 @@ const websocketPlugin: FastifyPluginAsync = async (fastify, options) => {
     try{
         console.log('Client connected');
 
+        let inactivityTimer: NodeJS.Timeout;
+
+        // Reset inactivity timer ONLY for savePosition messages
+        const resetInactivityTimer = () => {
+          clearTimeout(inactivityTimer);
+          inactivityTimer = setTimeout(() => {
+            socket.send(JSON.stringify({
+              type: 'inactivityAlert',
+              message: 'No "savePosition" message received for 15 seconds.'
+            }));
+          }, 15000); // 15 seconds
+        };
+
         // Properly typed message handler
         socket.on('message', async (data: any) => {
           const message = JSON.parse(data.toString());
@@ -26,6 +39,7 @@ const websocketPlugin: FastifyPluginAsync = async (fastify, options) => {
                 ...response
               }));
           }else if(message.type === 'savePosition'){
+            resetInactivityTimer(); // Reset only on savePosition
             const { vehicleId, routesId, latitude, longitude, stepIndex } = message.payload;
             
             const locationDto : LocationDto = {
@@ -41,6 +55,9 @@ const websocketPlugin: FastifyPluginAsync = async (fastify, options) => {
                 type: 'positionAck'
               }));
             }
+
+            // checking for the route deviation...
+            
           }
         });
 
