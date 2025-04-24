@@ -33,4 +33,8 @@ export async function authRoutes(fastify: FastifyInstance) {
       },
     },
   }, authController.login.bind(authController));
+
+  fastify.get('/drivers', {
+    preHandler: [fastify.authenticate, fastify.authorizeRoles(Role.ADMIN)]
+  }, authController.getDrivers.bind(authController));
 }

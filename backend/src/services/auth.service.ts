@@ -93,6 +93,23 @@ export class AuthService {
         }
     }
   }
+
+  async getDrivers(){
+    try{
+        const driversList = await this.userRepository.getDrivers();
+        return{
+            success: true,
+            message: "Drivers list is fetched",
+            driversList: driversList 
+        } 
+    }catch(error: any){
+        console.error('Error in fetching the drivers list: ', error.message);
+        return{
+            success: false,
+            message: 'Failed to fetch the drivers'
+        }
+    }
+  }
 }
 
 

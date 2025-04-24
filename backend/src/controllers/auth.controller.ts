@@ -18,4 +18,9 @@ export class AuthController {
         const result = await this.authService.login(request.body);
         reply.send(result);
     }
+
+    getDrivers = async(request: FastifyRequest<{}>, reply: FastifyReply) => {
+        const result = await this.authService.getDrivers();
+        reply.send(result);
+    }
 }
