@@ -2,6 +2,7 @@ import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, Pri
 import { Vehicle } from "./vehicle.entity";
 import { RouteStatus } from "../enums/routeStatus.enums";
 import { Location } from "./location.entity";
+import { Alert } from "./alert.entity";
 
 @Entity({ name: 'routes' })
 export class Routes {
@@ -18,6 +19,9 @@ export class Routes {
     @OneToMany(() => Location, (location) => location.route)
     locations: Location[];
     
+    @OneToMany(() => Alert, (alert) => alert.vehicle)
+    alerts: Alert[];
+
     @Column()
     startingPlaceName: string;
     
