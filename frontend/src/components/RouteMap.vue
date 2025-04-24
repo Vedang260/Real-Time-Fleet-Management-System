@@ -316,7 +316,7 @@ const startMovement = () => {
 
         ws?.send(
           JSON.stringify({
-            type: 'positionUpdate',
+            type: 'savePosition',
             payload: {
               vehicleId: vehicleId.value,
               routesId: routesId.value,
