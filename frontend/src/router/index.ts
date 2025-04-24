@@ -9,6 +9,7 @@ import DriverPage from '@/views/DriverPage.vue'
 import RoutesPage from '@/views/RoutesPage.vue'
 import RouteMap from '@/components/RouteMap.vue'
 import TrackingPage from '@/views/TrackingPage.vue'
+import AddVehicles from '@/components/AddVehicles.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -61,6 +62,11 @@ const router = createRouter({
       name: 'Track Vehicle',
       component: TrackingPage,
       props: true
+    },
+    {
+      path: '/add/vehicles',
+      name: 'Add Vehicle',
+      component: AddVehicles
     }
   ],
 })

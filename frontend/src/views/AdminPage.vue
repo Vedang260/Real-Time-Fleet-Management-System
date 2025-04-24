@@ -166,7 +166,7 @@ onMounted(fetchVehicles)
 
 // Navigation
 const navigateToAddVehicle = () => {
-  router.push('/admin/vehicles/add')
+  router.push('/add/vehicles')
 }
 
 // Vehicle Actions

@@ -53,8 +53,8 @@
                     label="Assign Driver"
                     v-model="form.driverId"
                     :items="drivers"
-                    item-title="name"
-                    item-value="id"
+                    item-title="username"
+                    item-value="userId"
                     :error-messages="driverErrors"
                     prepend-inner-icon="mdi-account"
                     outlined
@@ -207,16 +207,19 @@
     loadingDrivers.value = true;
     try {
       // Replace with your actual API call
-      // const response = await fetch('/api/drivers');
-      // drivers.value = await response.json();
-      
-      // Mock data for demonstration
-      drivers.value = [
-        { id: 1, name: 'John Smith' },
-        { id: 2, name: 'Sarah Johnson' },
-        { id: 3, name: 'Michael Brown' },
-        { id: 4, name: 'Emily Davis' },
-      ];
+      const response = await axios.get(
+        `http://localhost:8000/api/auth/drivers`,
+        {
+          headers: {
+            Authorization: `Bearer ${user?.token || ''}`,
+            'Content-Type': 'application/json',
+          },
+          withCredentials: true,
+        }
+      )
+      if(response.data.success){
+       drivers.value = response.data.driversList;
+      }
     } catch (error) {
       console.error('Error fetching drivers:', error);
       snackbarMessage.value = 'Failed to load drivers';
@@ -244,7 +247,6 @@
           withCredentials: true,
         }
       )
-      
       
       if (response.data.success) {
         snackbarMessage.value = response.data.message;
