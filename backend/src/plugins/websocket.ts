@@ -12,8 +12,12 @@ const websocketPlugin: FastifyPluginAsync = async (fastify, options) => {
   const locationService = new LocationService(fastify);
   const alertsService = new AlertsService(fastify);
   
+  // Store all connected sockets
+const connectedClients: WebSocket[] = [];
+
   fastify.get('/ws', { websocket: true }, ( socket: WebSocket , req) => {
     try{
+        connectedClients.push(socket);
         console.log('Client connected');
 
         let inactivityTimer: NodeJS.Timeout;
@@ -31,10 +35,15 @@ const websocketPlugin: FastifyPluginAsync = async (fastify, options) => {
             const response = await alertsService.saveAlert(alertDto);
 
             if(response.success){
-              socket.send(JSON.stringify({
-                type: 'inactivityAlert',
-                message: 'No movement is observed for the vehicle on this route'
-              }));
+              // Send to ALL clients (or only admin if identifiable)
+              for (const client of connectedClients) {
+                if (client.readyState === WebSocket.OPEN) {
+                  client.send(JSON.stringify({
+                    type: 'inactivityAlert',
+                    message: alertDto.message
+                  }));
+                }
+              }
             }
           }, 10000); // 10 seconds
         };
@@ -76,6 +85,8 @@ const websocketPlugin: FastifyPluginAsync = async (fastify, options) => {
         });
 
         socket.on('close', () => {
+          const index = connectedClients.indexOf(socket);
+          if (index !== -1) connectedClients.splice(index, 1);
           console.log('Client disconnected');
         });
 
