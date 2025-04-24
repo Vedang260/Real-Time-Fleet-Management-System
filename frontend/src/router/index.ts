@@ -10,6 +10,7 @@ import RoutesPage from '@/views/RoutesPage.vue'
 import RouteMap from '@/components/RouteMap.vue'
 import TrackingPage from '@/views/TrackingPage.vue'
 import AddVehicles from '@/components/AddVehicles.vue'
+import ManagerPage from '@/views/ManagerPage.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -38,6 +39,11 @@ const router = createRouter({
       path: '/driver',
       name: 'driver',
       component: DriverPage
+    },
+    {
+      path: '/manager',
+      name: 'Manager',
+      component: ManagerPage
     },
     {
       path: '/view/vehicles/routes/:vehicleId',
