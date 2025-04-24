@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Vehicle } from "./vehicle.entity";
 
 // Alerts entity
@@ -7,7 +7,11 @@ export class Alert {
   @PrimaryGeneratedColumn('uuid')
   alertId: string;
 
+  @Column('uuid')
+  vehicleId: string;
+
   @ManyToOne(() => Vehicle, (vehicle) => vehicle.alerts, { onDelete: 'CASCADE' })
+  @JoinColumn({name: 'vehicleId'})
   vehicle: Vehicle;
 
   @Column({ length: 50 })
@@ -19,9 +23,4 @@ export class Alert {
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
 
-  @Column({ default: false })
-  resolved: boolean;
-
-  @Column({ type: 'timestamp', nullable: true })
-  resolvedAt: Date;
 }
