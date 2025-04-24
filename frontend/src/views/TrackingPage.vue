@@ -137,11 +137,15 @@ const isGoogleMapsLoaded = ref(false);
 const currentPosition = ref<{ lat: number; lng: number } | null>(null);
 const locationHistory = ref<{ lat: number; lng: number }[]>([]);
 let pollingInterval: NodeJS.Timeout | null = null;
+let ws: WebSocket | null = null;
 
 // Notification state
 const snackbar = ref(false);
 const snackbarMessage = ref('');
 const snackbarColor = ref('success');
+
+// WebSocket URL
+const wsUrl = `ws://localhost:8000/ws`;
 
 // Route data
 const route = useRoute();
@@ -251,6 +255,55 @@ const initializeMap = () => {
 const storedUser = customStorage.getItem('auth');
 const user = storedUser ? JSON.parse(storedUser) : null;
 
+// Setup WebSocket
+const setupWebSocket = () => {
+  if (!user?.token) {
+    showNotification('Please log in to continue.', 'error');
+    return;
+  }
+
+  ws = new WebSocket(wsUrl);
+
+  ws.onopen = () => {
+    console.log('WebSocket connected');
+  };
+
+  ws.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      if (data.type === 'positionAck') {
+        showNotification('Position update saved.', 'success');
+      } else if (data.type === 'inactivityAlert') {
+        handleAlert(data);
+      }
+    } catch (error) {
+      showNotification('Error processing WebSocket message.', 'error');
+    }
+  };
+
+  ws.onerror = () => {
+    showNotification('WebSocket connection error.', 'error');
+  };
+
+  ws.onclose = () => {
+    console.log('WebSocket disconnected');
+    setTimeout(setupWebSocket, 5000);
+  };
+};
+
+// Handle alerts
+const handleAlert = (data: any) => {
+  let color = 'info';
+  if (data.type === 'routeDeviation') {
+    color = 'error';
+  } else if (data.type === 'inactivityAlert') {
+    color = 'warning';
+  } else if (data.type === 'maintenance') {
+    color = 'info';
+  }
+  showNotification(data.message, color);
+};
+
 // Show notification
 const showNotification = (message: string, color: string = 'success') => {
   snackbarMessage.value = message;
@@ -260,6 +313,7 @@ const showNotification = (message: string, color: string = 'success') => {
 
 // Lifecycle hooks
 onMounted(() => {
+  setupWebSocket();
   fetchRoutes();
 
   const checkGoogleMaps = setInterval(() => {
