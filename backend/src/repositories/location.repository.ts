@@ -20,9 +20,9 @@ export class LocationRepository{
         }
     }
 
-    async getLocationHistory(vehicleId: string): Promise<Location[] | null>{
+    async getLocationHistory(vehicleId: string, routesId: string): Promise<Location[] | null>{
         try{
-            return await this.locationsRepository.find({where: {vehicleId}});
+            return await this.locationsRepository.find({where: {vehicleId, routesId}});
         }catch(error: any){
             console.error('Error in fetching the Location History: ', error.message);
             throw new error('Failed to fetch the Location History');

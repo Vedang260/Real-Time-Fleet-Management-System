@@ -30,9 +30,9 @@ export class LocationService{
         }
     }
 
-    async getLocationHistory(vehicleId: string){
+    async getLocationHistory(vehicleId: string, routesId: string){
         try{
-            const locations = await this.locationRepository.getLocationHistory(vehicleId);
+            const locations = await this.locationRepository.getLocationHistory(vehicleId, routesId);
             console.log("Locations: ", locations);
             if(locations){
                 return{

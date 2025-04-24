@@ -44,13 +44,13 @@ const websocketPlugin: FastifyPluginAsync = async (fastify, options) => {
           const message = JSON.parse(data.toString());
 
           if(message.type === 'fetchHistory'){
-            const { vehicleId } = message.payload;
-            const response = await locationService.getLocationHistory(vehicleId);
-            console.log("Response: ", response);
-              socket.send(JSON.stringify({
-                type: 'historyResponse',
-                ...response
-              }));
+            // const { vehicleId } = message.payload;
+            // const response = await locationService.getLocationHistory(vehicleId);
+            // console.log("Response: ", response);
+            //   socket.send(JSON.stringify({
+            //     type: 'historyResponse',
+            //     ...response
+            //   }));
           }else if(message.type === 'savePosition'){
             const { vehicleId, routesId, latitude, longitude, stepIndex } = message.payload;
             
