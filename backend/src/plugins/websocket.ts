@@ -3,12 +3,15 @@ import fastifyWebsocket from '@fastify/websocket';
 import { WebSocket } from 'ws';
 import { LocationService } from '../services/location.service';
 import { LocationDto } from '../dtos/location.dto';
+import { AlertsService } from '../services/alerts.service';
+import { AlertDto } from '../dtos/alert.dto';
 
 const websocketPlugin: FastifyPluginAsync = async (fastify, options) => {
   await fastify.register(fastifyWebsocket);
 
   const locationService = new LocationService(fastify);
-
+  const alertsService = new AlertsService(fastify);
+  
   fastify.get('/ws', { websocket: true }, ( socket: WebSocket , req) => {
     try{
         console.log('Client connected');
@@ -16,14 +19,24 @@ const websocketPlugin: FastifyPluginAsync = async (fastify, options) => {
         let inactivityTimer: NodeJS.Timeout;
 
         // Reset inactivity timer ONLY for savePosition messages
-        const resetInactivityTimer = () => {
+        const resetInactivityTimer = async(vehicleId: string, routesId: string) => {
           clearTimeout(inactivityTimer);
-          inactivityTimer = setTimeout(() => {
-            socket.send(JSON.stringify({
-              type: 'inactivityAlert',
-              message: 'No "savePosition" message received for 15 seconds.'
-            }));
-          }, 15000); // 15 seconds
+          inactivityTimer = setTimeout(async () => {
+            const alertDto : AlertDto = {
+              vehicleId,
+              routesId,
+              alertType: 'inactivity',
+              message: 'No movement is observed for the vehicle on this route'
+            };
+            const response = await alertsService.saveAlert(alertDto);
+
+            if(response.success){
+              socket.send(JSON.stringify({
+                type: 'inactivityAlert',
+                message: 'No movement is observed for the vehicle on this route'
+              }));
+            }
+          }, 10000); // 10 seconds
         };
 
         // Properly typed message handler
@@ -39,9 +52,10 @@ const websocketPlugin: FastifyPluginAsync = async (fastify, options) => {
                 ...response
               }));
           }else if(message.type === 'savePosition'){
-            resetInactivityTimer(); // Reset only on savePosition
             const { vehicleId, routesId, latitude, longitude, stepIndex } = message.payload;
             
+            resetInactivityTimer(vehicleId, routesId); // Reset only on savePosition
+
             const locationDto : LocationDto = {
               vehicleId,
               routesId,
