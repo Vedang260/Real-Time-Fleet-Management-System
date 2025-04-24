@@ -44,12 +44,6 @@ const router = createRouter({
       props: true
     },
     {
-      path: '/vehicles/track/:vehicleId',
-      name: 'Map',
-      component: Map,
-      props: true
-    },
-    {
       path: '/vehicles/routes/:vehicleId',
       name: 'AddRoutes',
       component: AddRoutes,
@@ -57,7 +51,7 @@ const router = createRouter({
     },
     {
       path: '/driver/:vehicleId/routes/:routesId',
-      name: 'AddRoutes',
+      name: 'Drivers Map Route',
       component: RouteMap,
       props: true
     }

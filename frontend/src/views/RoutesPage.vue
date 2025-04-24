@@ -97,7 +97,12 @@
   onMounted(fetchRoutes)
   
   const viewOnMap = (routes: Routes) => {
-    router.push(`/driver/${vehicleId.value}/routes/${routes.routesId}`)
+    if(user.user.role === 'DRIVER'){
+      router.push(`/driver/${vehicleId.value}/routes/${routes.routesId}`)
+    }
+    else{
+      router.push(`/track/vehicle/${vehicleId.value}/routes/${routes.routesId}`)
+    }
   }
   
   </script>

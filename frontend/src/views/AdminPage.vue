@@ -208,7 +208,7 @@ const deleteVehicle = async () => {
 }
 
 const trackVehicle = (vehicle: Vehicle) => {
-  router.push(`/vehicles/track/${vehicle.vehicleId}`)
+  router.push(`/view/vehicles/routes/${vehicle.vehicleId}`)
 }
 
 const addRoutes = (vehicle: Vehicle) => {
