@@ -11,8 +11,8 @@
         <v-row class="mb-4">
           <v-col cols="12" sm="6">
             <div class="route-info">
-              <strong>From:</strong> {{ selectedRoute?.startingPlaceName || 'N/A' }}<br />
-              <strong>To:</strong> {{ selectedRoute?.destinationPlaceName || 'N/A' }}
+              <strong>Starting Place:</strong> {{ selectedRoute?.startingPlaceName || 'N/A' }}<br />
+              <strong>Destination Place:</strong> {{ selectedRoute?.destinationPlaceName || 'N/A' }}
             </div>
           </v-col>
           <v-col cols="12" sm="6" class="text-right">
@@ -249,7 +249,7 @@ const setupWebSocket = () => {
       const data = JSON.parse(event.data);
       if (data.type === 'positionAck') {
         showNotification('Position update saved.', 'success');
-      } else if (data.type === 'alert') {
+      } else if (data.type === 'inactivityAlert') {
         handleAlert(data);
       }
     } catch (error) {
@@ -270,11 +270,11 @@ const setupWebSocket = () => {
 // Handle alerts
 const handleAlert = (data: any) => {
   let color = 'info';
-  if (data.alertType === 'routeDeviation') {
+  if (data.type === 'routeDeviation') {
     color = 'error';
-  } else if (data.alertType === 'inactivity') {
+  } else if (data.type === 'inactivityAlert') {
     color = 'warning';
-  } else if (data.alertType === 'maintenance') {
+  } else if (data.type === 'maintenance') {
     color = 'info';
   }
   showNotification(data.message, color);
@@ -375,7 +375,7 @@ const togglePause = () => {
 
           ws?.send(
             JSON.stringify({
-              type: 'positionUpdate',
+              type: 'savePosition',
               payload: {
                 vehicleId: vehicleId.value,
                 routesId: routesId.value,

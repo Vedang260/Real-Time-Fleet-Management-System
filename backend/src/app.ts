@@ -42,6 +42,7 @@ app.register(websocketPlugin);
 app.register(authRoutes, { prefix: '/api/auth' });
 app.register(vehicleRoutes, { prefix: '/api/vehicles'});
 app.register(routeRoutes, { prefix: '/api/routes'});
+app.register(locationRoutes, { prefix: '/api/locations'});
 
 const start = async () => {
   try {
