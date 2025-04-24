@@ -16,27 +16,27 @@
             </div>
           </v-col>
           <v-col cols="12" sm="6" class="text-right">
-  <v-btn
-    color="secondary"
-    :disabled="isMoving || !isGoogleMapsLoaded || !selectedRoute || !selectedRoute.coordinates?.length"
-    :loading="isMoving && !isPaused"
-    @click="startMovement"
-    elevation="4"
-  >
-    <v-icon left>mdi-play</v-icon>
-    Start
-  </v-btn>
-  <v-btn
-    v-if="isMoving"
-    :color="isPaused ? 'warning' : 'error'"
-    class="ml-2"
-    @click="togglePause"
-    elevation="4"
-  >
-    <v-icon left>{{ isPaused ? 'mdi-play' : 'mdi-pause' }}</v-icon>
-    {{ isPaused ? 'Resume' : 'Pause' }}
-  </v-btn>
-</v-col>
+            <v-btn
+              color="secondary"
+              :disabled="isMoving || !isGoogleMapsLoaded || !selectedRoute || !selectedRoute.coordinates?.length"
+              :loading="isMoving && !isPaused"
+              @click="startMovement"
+              elevation="4"
+            >
+              <v-icon left>mdi-play</v-icon>
+              Start
+            </v-btn>
+            <v-btn
+              v-if="isMoving"
+              :color="isPaused ? 'warning' : 'error'"
+              class="ml-2"
+              @click="togglePause"
+              elevation="4"
+            >
+              <v-icon left>{{ isPaused ? 'mdi-play' : 'mdi-pause' }}</v-icon>
+              {{ isPaused ? 'Resume' : 'Pause' }}
+            </v-btn>
+          </v-col>
         </v-row>
 
         <!-- Google Map -->
@@ -48,11 +48,21 @@
             map-type-id="roadmap"
             style="width: 100%; height: 50vh"
           >
-            <!-- Route Polyline -->
+            <!-- Visited Path Polyline (Green) -->
             <GMapPolyline
-              :path="selectedRoute.coordinates"
+              :path="visitedPath"
               :options="{
-                strokeColor: '#FF5722',
+                strokeColor: '#4CAF50', // Green for visited path
+                strokeWeight: 6,
+                strokeOpacity: 0.8,
+              }"
+            />
+
+            <!-- Remaining Path Polyline (Orange) -->
+            <GMapPolyline
+              :path="remainingPath"
+              :options="{
+                strokeColor: '#FF5722', // Orange for remaining path
                 strokeWeight: 6,
                 strokeOpacity: 0.8,
               }"
@@ -127,7 +137,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { customStorage } from '@/utils/customStorage';
 import { RoutesResponse, Routes, LocationPoint } from '@/types/vehicleRoutes';
@@ -154,6 +164,17 @@ const route = useRoute();
 const vehicleId = ref(route.params.vehicleId as string);
 const routesId = ref(route.params.routesId as string);
 const selectedRoute = ref<any>(null);
+
+// Computed properties for visited and remaining paths
+const visitedPath = computed(() => {
+  if (!selectedRoute.value || !selectedRoute.value.coordinates) return [];
+  return selectedRoute.value.coordinates.slice(0, currentStep.value + 1);
+});
+
+const remainingPath = computed(() => {
+  if (!selectedRoute.value || !selectedRoute.value.coordinates) return [];
+  return selectedRoute.value.coordinates.slice(currentStep.value);
+});
 
 // WebSocket URL
 const wsUrl = `ws://localhost:8000/ws`;
@@ -313,7 +334,6 @@ const startMovement = () => {
   }, 3000);
 };
 
-// Toggle pause/resume
 // Toggle pause/resume
 const togglePause = () => {
   if (!isMoving.value) {
