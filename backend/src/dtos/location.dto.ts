@@ -1,5 +1,6 @@
 export interface LocationDto{
     vehicleId: string;
+    routesId: string;
     latitude: number;
     longitude: number;
 }

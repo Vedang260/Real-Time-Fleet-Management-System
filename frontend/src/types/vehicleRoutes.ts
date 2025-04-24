@@ -17,5 +17,5 @@ export interface Routes extends LocationPoint{
 export interface RoutesResponse{
     success: boolean;
     message: string;
-    routes: Routes[];
+    routes: Routes;
 }

@@ -2,6 +2,7 @@ import { FastifyPluginAsync } from 'fastify';
 import fastifyWebsocket from '@fastify/websocket';
 import { WebSocket } from 'ws';
 import { LocationService } from '../services/location.service';
+import { LocationDto } from '../dtos/location.dto';
 
 const websocketPlugin: FastifyPluginAsync = async (fastify, options) => {
   await fastify.register(fastifyWebsocket);
@@ -9,43 +10,50 @@ const websocketPlugin: FastifyPluginAsync = async (fastify, options) => {
   const locationService = new LocationService(fastify);
 
   fastify.get('/ws', { websocket: true }, ( socket: WebSocket , req) => {
-    console.log('Client connected');
+    try{
+        console.log('Client connected');
 
-    // Properly typed message handler
-    socket.on('message', async (data: any) => {
-      const message = JSON.parse(data.toString());
-      if(message.type === 'fetchHistory'){
-         const { vehicleId } = message.payload;
-         const response = await locationService.getLocationHistory(vehicleId);
-         console.log("Response: ", response);
-          socket.send(JSON.stringify({
-            type: 'historyResponse',
-            ...response
-          }));
-      }else if(message.type === 'savePosition'){
-        
-      }
-      // if(message.type === 'SAVE_LOCATION'){
-      //   const { vehicleId, lat, lng } = message.payload;
-      // }else if(message.type === 'fetchHistory'){
-      //   const { vehicleId } = message.payload;
-      //   const response = locationService.getLocationHistory(vehicleId);
-      //   socket.send(JSON.stringify({
-      //     type: 'historyResponse',
-      //     ...response
-      //   }));
-      // }
-    });
+        // Properly typed message handler
+        socket.on('message', async (data: any) => {
+          const message = JSON.parse(data.toString());
 
-    socket.on('close', () => {
-      console.log('Client disconnected');
-    });
+          if(message.type === 'fetchHistory'){
+            const { vehicleId } = message.payload;
+            const response = await locationService.getLocationHistory(vehicleId);
+            console.log("Response: ", response);
+              socket.send(JSON.stringify({
+                type: 'historyResponse',
+                ...response
+              }));
+          }else if(message.type === 'savePosition'){
+            const { vehicleId, routesId, latitude, longitude, stepIndex } = message.payload;
+            
+            const locationDto : LocationDto = {
+              vehicleId,
+              routesId,
+              latitude,
+              longitude
+            }
+            // save the position into the locationHistory
+            const response = await locationService.saveLocation(locationDto);
+            if(response.success){
+              socket.send(JSON.stringify({
+                type: 'positionAck'
+              }));
+            }
+          }
+        });
 
-    socket.on('error', (error: Error) => {
-      console.error('WebSocket error:', error);
-    });
-    
-    socket.send('Welcome to the WebSocket server!');
+        socket.on('close', () => {
+          console.log('Client disconnected');
+        });
+
+        socket.on('error', (error: Error) => {
+          console.error('WebSocket error:', error);
+        });
+    }catch(error: any){
+      console.log('Error in RealTime Web-Sockets: ', error.message);
+    }
   });
 };
 
